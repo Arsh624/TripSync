@@ -89,7 +89,10 @@ export default function Navbar() {
                                         <img
                                             src={user.user_metadata.avatar_url}
                                             alt=""
-                                            className="h-7 w-7 rounded-full"
+                                            width={28}
+                                            height={28}
+                                            className="h-7 w-7 rounded-full object-cover"
+                                            referrerPolicy="no-referrer"
                                         />
                                     ) : (
                                         <div className="flex h-7 w-7 items-center justify-center rounded-full gradient-bg text-white text-xs font-bold">

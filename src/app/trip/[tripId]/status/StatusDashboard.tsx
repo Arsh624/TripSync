@@ -82,15 +82,20 @@ export default function StatusDashboard({
                             .select("id, name, avatar_url, email")
                             .in("id", memberIds);
 
-                        const withInfo = updatedMembers.map((m) => ({
-                            ...m,
-                            user: users?.find((u) => u.id === m.user_id) || {
-                                id: m.user_id,
-                                name: "Unknown",
-                                avatar_url: null,
-                                email: "",
-                            },
-                        }));
+                        const withInfo = updatedMembers.map((m) => {
+                            const u = users?.find((u) => u.id === m.user_id);
+                            return {
+                                ...m,
+                                user: u
+                                    ? { ...u, name: u.name || u.email?.split("@")[0] || "Member" }
+                                    : {
+                                        id: m.user_id,
+                                        name: "Member",
+                                        avatar_url: null,
+                                        email: "",
+                                    },
+                            };
+                        });
 
                         setMembers(withInfo);
                     }
@@ -104,7 +109,19 @@ export default function StatusDashboard({
     }, [trip.id]);
 
     const handleCopy = async () => {
-        await navigator.clipboard.writeText(shareUrl);
+        try {
+            await navigator.clipboard.writeText(shareUrl);
+        } catch {
+            // Fallback for non-HTTPS contexts
+            const textarea = document.createElement("textarea");
+            textarea.value = shareUrl;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+        }
         setCopied(true);
         setTimeout(() => setCopied(false), 2000);
     };
@@ -195,7 +212,10 @@ export default function StatusDashboard({
                                 <img
                                     src={member.user.avatar_url}
                                     alt=""
-                                    className="h-10 w-10 rounded-full"
+                                    width={40}
+                                    height={40}
+                                    className="h-10 w-10 rounded-full object-cover"
+                                    referrerPolicy="no-referrer"
                                 />
                             ) : (
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-bg text-white font-bold">

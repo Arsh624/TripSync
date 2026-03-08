@@ -99,8 +99,19 @@ ALTER TABLE preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE itineraries ENABLE ROW LEVEL SECURITY;
 ALTER TABLE location_recommendations ENABLE ROW LEVEL SECURITY;
 
--- Users: can read own data, insert on sign-up
-CREATE POLICY "Users can view own profile" ON users FOR SELECT USING (auth.uid() = id);
+-- Users: can read own data + co-members in shared trips, insert on sign-up
+-- (Replaces the old "Users can view own profile" policy that only allowed auth.uid() = id)
+CREATE POLICY "Users can view other members in their trips" ON users FOR SELECT
+USING (
+  id IN (
+    SELECT user_id FROM trip_members
+    WHERE trip_id IN (
+      SELECT trip_id FROM trip_members
+      WHERE user_id = auth.uid()
+    )
+  )
+  OR id = auth.uid()
+);
 CREATE POLICY "Users can insert own profile" ON users FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Users can update own profile" ON users FOR UPDATE USING (auth.uid() = id);
 

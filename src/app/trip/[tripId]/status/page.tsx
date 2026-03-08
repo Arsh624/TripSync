@@ -53,15 +53,20 @@ export default async function StatusPage({ params }: StatusPageProps) {
         .select("id, name, avatar_url, email")
         .in("id", memberIds);
 
-    const membersWithInfo = members?.map((m) => ({
-        ...m,
-        user: users?.find((u) => u.id === m.user_id) || {
-            id: m.user_id,
-            name: "Unknown",
-            avatar_url: null,
-            email: "",
-        },
-    })) || [];
+    const membersWithInfo = members?.map((m) => {
+        const u = users?.find((u) => u.id === m.user_id);
+        return {
+            ...m,
+            user: u
+                ? { ...u, name: u.name || u.email?.split("@")[0] || "Member" }
+                : {
+                    id: m.user_id,
+                    name: "Member",
+                    avatar_url: null,
+                    email: "",
+                },
+        };
+    }) || [];
 
     const isLeader = trip.leader_id === user.id;
 
