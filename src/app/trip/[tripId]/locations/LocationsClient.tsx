@@ -40,7 +40,7 @@ export default function LocationsClient({
 }: LocationsClientProps) {
     const router = useRouter();
     const [phase, setPhase] = useState<
-        "idle" | "synthesizing" | "recommending" | "generating" | "done" | "error"
+        "idle" | "synthesizing" | "recommending" | "generating" | "done" | "error" | "budget_warning"
     >(existingRecommendations.length > 0 ? "done" : "idle");
     const [recommendations, setRecommendations] = useState<Recommendation[]>(
         existingRecommendations
@@ -49,6 +49,15 @@ export default function LocationsClient({
     const [error, setError] = useState("");
     const [loadingMsgIndex, setLoadingMsgIndex] = useState(0);
     const [generatingFor, setGeneratingFor] = useState<string | null>(null);
+    const [budgetWarning, setBudgetWarning] = useState<{
+        message: string;
+        lowest_budget: number;
+        lowest_budget_member: string;
+        cheapest_destination: string;
+        cheapest_estimated_cost: number;
+        options: string[];
+        all_recommendations: Recommendation[];
+    } | null>(null);
 
     // Cycle through loading messages
     useEffect(() => {
@@ -81,6 +90,13 @@ export default function LocationsClient({
             });
             const recData = await recRes.json();
             if (!recRes.ok) throw new Error(recData.error);
+
+            // Check for budget_insufficient response
+            if (recData.status === "budget_insufficient") {
+                setBudgetWarning(recData);
+                setPhase("budget_warning");
+                return;
+            }
 
             setRecommendations(recData.recommendations || []);
             setPhase("done");
@@ -137,10 +153,10 @@ export default function LocationsClient({
                             <div
                                 key={i}
                                 className={`h-3 w-3 rounded-full transition-all duration-500 ${(phase === "synthesizing" && i === 0) ||
-                                        (phase === "recommending" && i <= 1) ||
-                                        (phase === "generating" && i <= 2)
-                                        ? "gradient-bg scale-110"
-                                        : "bg-border"
+                                    (phase === "recommending" && i <= 1) ||
+                                    (phase === "generating" && i <= 2)
+                                    ? "gradient-bg scale-110"
+                                    : "bg-border"
                                     }`}
                             />
                         ))}
@@ -212,6 +228,57 @@ export default function LocationsClient({
                     </div>
                 )}
 
+                {/* Budget warning */}
+                {phase === "budget_warning" && budgetWarning && (
+                    <div className="mt-8 animate-fade-in">
+                        <div className="rounded-2xl border-2 border-amber-300 bg-amber-50 p-6">
+                            <div className="flex items-start gap-4">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100 text-2xl">
+                                    ⚠️
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className="text-lg font-bold text-amber-900">
+                                        Budget Mismatch
+                                    </h3>
+                                    <p className="mt-1 text-sm text-amber-800">
+                                        {budgetWarning.message}
+                                    </p>
+                                    <div className="mt-3 space-y-1">
+                                        {budgetWarning.options.map((opt, i) => (
+                                            <p key={i} className="text-sm text-amber-700">
+                                                {i + 1}. {opt}
+                                            </p>
+                                        ))}
+                                    </div>
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        <button
+                                            onClick={() => router.push(`/trip/${tripId}/preferences`)}
+                                            className="rounded-xl border border-amber-300 bg-white px-5 py-2 text-sm font-semibold text-amber-800 hover:bg-amber-50 transition-all"
+                                        >
+                                            ← Adjust Budgets
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                setRecommendations(
+                                                    budgetWarning.all_recommendations.map((r: any) => ({
+                                                        ...r,
+                                                        destination: r.name || r.destination,
+                                                    }))
+                                                );
+                                                setBudgetWarning(null);
+                                                setPhase("done");
+                                            }}
+                                            className="rounded-xl gradient-bg px-5 py-2 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all"
+                                        >
+                                            Show Plans Anyway →
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Recommendation cards */}
                 {recommendations.length > 0 && phase === "done" && (
                     <div className="mt-8 space-y-6">
@@ -228,10 +295,10 @@ export default function LocationsClient({
                                         <div className="shrink-0 flex flex-col items-center">
                                             <div
                                                 className={`flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold text-white ${rec.score >= 80
-                                                        ? "bg-emerald-500"
-                                                        : rec.score >= 60
-                                                            ? "bg-amber-500"
-                                                            : "bg-red-400"
+                                                    ? "bg-emerald-500"
+                                                    : rec.score >= 60
+                                                        ? "bg-amber-500"
+                                                        : "bg-red-400"
                                                     }`}
                                             >
                                                 {rec.score}
@@ -296,8 +363,8 @@ export default function LocationsClient({
                                                 <button
                                                     onClick={() => handleChooseDestination(name)}
                                                     className={`mt-4 w-full sm:w-auto rounded-xl px-6 py-2.5 text-sm font-semibold transition-all ${index === 0
-                                                            ? "gradient-bg text-white shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
-                                                            : "border border-border bg-card text-foreground hover:border-primary-light hover:bg-indigo-50"
+                                                        ? "gradient-bg text-white shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                                                        : "border border-border bg-card text-foreground hover:border-primary-light hover:bg-indigo-50"
                                                         }`}
                                                 >
                                                     Choose {name} →

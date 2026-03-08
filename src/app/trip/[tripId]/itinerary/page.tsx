@@ -53,12 +53,30 @@ export default async function ItineraryPage({ params }: ItineraryPageProps) {
         .select("id, name, avatar_url, email")
         .in("id", memberIds);
 
+    // Fetch member budgets for comparison
+    const { data: preferences } = await supabase
+        .from("preferences")
+        .select("user_id, budget_max")
+        .eq("trip_id", tripId);
+
+    const memberBudgets: Record<string, number> = {};
+    if (preferences && users) {
+        for (const pref of preferences) {
+            if (pref.budget_max != null) {
+                const u = users.find((u) => u.id === pref.user_id);
+                const name = u?.name || u?.email?.split("@")[0] || "Unknown";
+                memberBudgets[name] = pref.budget_max;
+            }
+        }
+    }
+
     return (
         <ItineraryView
             trip={trip}
             itinerary={itinerary.itinerary_data}
             destination={itinerary.destination}
             members={users || []}
+            memberBudgets={memberBudgets}
         />
     );
 }

@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { useRouter } from "next/navigation";
+
+const VoiceConversation = lazy(() => import("@/components/VoiceConversation"));
 
 // ── Vibe config ──
 const vibes = [
@@ -63,6 +65,33 @@ export default function PreferenceForm({
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
+    const [showVoice, setShowVoice] = useState(false);
+    const [voiceCaptured, setVoiceCaptured] = useState(false);
+
+    const handleVoiceComplete = (prefs: any) => {
+        // Auto-populate all form fields from extracted voice data
+        if (prefs.budget_max != null) setBudget(prefs.budget_max as number);
+        if (prefs.activity_level) setActivityLevel(prefs.activity_level as string);
+        if (prefs.accommodation_pref) setAccommodationPref(prefs.accommodation_pref as string);
+        if (prefs.dietary_restrictions) setDietary(prefs.dietary_restrictions as string[]);
+        if (prefs.dietary_notes) setDietaryNotes(prefs.dietary_notes as string);
+        if (prefs.must_haves) setMustHaves(prefs.must_haves as string[]);
+        if (prefs.dealbreakers) setDealbreakers(prefs.dealbreakers as string[]);
+        if (prefs.additional_notes) setAdditionalNotes(prefs.additional_notes as string);
+
+        // Populate vibe ratings
+        const newVibes = { ...vibeRatings };
+        for (const key of Object.keys(newVibes)) {
+            if (prefs[key] != null) {
+                newVibes[key] = prefs[key] as number;
+            }
+        }
+        setVibeRatings(newVibes);
+
+        setShowVoice(false);
+        setVoiceCaptured(true);
+        setStep(steps.length - 1); // Jump to summary
+    };
 
     // ── Form state ──
     const [budget, setBudget] = useState(
@@ -179,12 +208,40 @@ export default function PreferenceForm({
                                 ✏️ You already submitted — editing your preferences
                             </div>
                         )}
+
+                        {/* Voice option */}
+                        <button
+                            onClick={() => setShowVoice(true)}
+                            className="mt-8 w-full max-w-md mx-auto flex items-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-card p-4 text-left transition-all hover:border-primary hover:shadow-md group"
+                        >
+                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl gradient-bg text-white text-xl group-hover:scale-110 transition-transform">
+                                🎙️
+                            </div>
+                            <div>
+                                <div className="font-semibold text-foreground">Prefer to talk?</div>
+                                <div className="text-xs text-muted">Tell our AI about your ideal trip — we&apos;ll fill the form for you</div>
+                            </div>
+                        </button>
+
+                        <div className="mt-4 flex items-center gap-3 max-w-md mx-auto">
+                            <div className="flex-1 h-px bg-border" />
+                            <span className="text-xs text-muted">or fill out the form</span>
+                            <div className="flex-1 h-px bg-border" />
+                        </div>
+
                         <button
                             onClick={() => setStep(1)}
-                            className="mt-8 inline-flex items-center gap-2 rounded-full gradient-bg px-8 py-3.5 text-lg font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95"
+                            className="mt-4 inline-flex items-center gap-2 rounded-full gradient-bg px-8 py-3.5 text-lg font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95"
                         >
                             Let&apos;s Go! 🚀
                         </button>
+                    </div>
+                )}
+
+                {/* Voice captured banner */}
+                {voiceCaptured && step === steps.length - 1 && (
+                    <div className="mb-4 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm text-emerald-700 animate-fade-in">
+                        🎙️ Here&apos;s what I captured from our chat — review and submit when you&apos;re ready!
                     </div>
                 )}
 
@@ -304,8 +361,8 @@ export default function PreferenceForm({
                                         }
                                     }}
                                     className={`rounded-xl border p-3 text-sm font-medium transition-all ${dietary.includes(option)
-                                            ? "border-primary bg-indigo-50 text-primary shadow-sm"
-                                            : "border-border bg-card text-foreground hover:border-primary-light"
+                                        ? "border-primary bg-indigo-50 text-primary shadow-sm"
+                                        : "border-border bg-card text-foreground hover:border-primary-light"
                                         }`}
                                 >
                                     {option}
@@ -369,8 +426,8 @@ export default function PreferenceForm({
                                         type="button"
                                         onClick={() => setActivityLevel(option.value)}
                                         className={`rounded-xl border p-4 text-center transition-all ${activityLevel === option.value
-                                                ? "border-primary bg-indigo-50 text-primary shadow-sm"
-                                                : "border-border bg-card text-foreground hover:border-primary-light"
+                                            ? "border-primary bg-indigo-50 text-primary shadow-sm"
+                                            : "border-border bg-card text-foreground hover:border-primary-light"
                                             }`}
                                     >
                                         <div className="text-2xl mb-1">{option.emoji}</div>
@@ -399,8 +456,8 @@ export default function PreferenceForm({
                                         type="button"
                                         onClick={() => setAccommodationPref(option.value)}
                                         className={`rounded-xl border p-4 text-center transition-all ${accommodationPref === option.value
-                                                ? "border-primary bg-indigo-50 text-primary shadow-sm"
-                                                : "border-border bg-card text-foreground hover:border-primary-light"
+                                            ? "border-primary bg-indigo-50 text-primary shadow-sm"
+                                            : "border-border bg-card text-foreground hover:border-primary-light"
                                             }`}
                                     >
                                         <div className="text-2xl mb-1">{option.emoji}</div>
@@ -422,8 +479,8 @@ export default function PreferenceForm({
                                         type="button"
                                         onClick={() => setMustHaves(toggleArray(mustHaves, option))}
                                         className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${mustHaves.includes(option)
-                                                ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                                                : "border-border bg-card text-foreground hover:border-emerald-300"
+                                            ? "border-emerald-400 bg-emerald-50 text-emerald-700"
+                                            : "border-border bg-card text-foreground hover:border-emerald-300"
                                             }`}
                                     >
                                         {mustHaves.includes(option) ? "✓ " : ""}
@@ -447,8 +504,8 @@ export default function PreferenceForm({
                                             setDealbreakers(toggleArray(dealbreakers, option))
                                         }
                                         className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${dealbreakers.includes(option)
-                                                ? "border-red-400 bg-red-50 text-red-700"
-                                                : "border-border bg-card text-foreground hover:border-red-300"
+                                            ? "border-red-400 bg-red-50 text-red-700"
+                                            : "border-border bg-card text-foreground hover:border-red-300"
                                             }`}
                                     >
                                         {dealbreakers.includes(option) ? "✗ " : ""}
@@ -594,6 +651,17 @@ export default function PreferenceForm({
                     </div>
                 )}
             </div>
+
+            {/* Voice conversation modal */}
+            {showVoice && (
+                <Suspense fallback={null}>
+                    <VoiceConversation
+                        userName={userName}
+                        onComplete={handleVoiceComplete}
+                        onClose={() => setShowVoice(false)}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 }

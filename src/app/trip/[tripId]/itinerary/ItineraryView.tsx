@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
+
+const NarrationPlayer = lazy(() => import("@/components/NarrationPlayer"));
 
 interface Activity {
     time: string;
@@ -74,6 +76,7 @@ interface ItineraryViewProps {
     itinerary: ItineraryData;
     destination: string;
     members: Member[];
+    memberBudgets?: Record<string, number>;
 }
 
 const typeColors: Record<string, { bg: string; border: string; text: string; label: string }> = {
@@ -93,9 +96,11 @@ export default function ItineraryView({
     trip,
     itinerary,
     destination,
+    memberBudgets = {},
 }: ItineraryViewProps) {
     const [expandedReasoning, setExpandedReasoning] = useState<string | null>(null);
     const [activeDay, setActiveDay] = useState(-3); // Start on overview
+    const [showNarration, setShowNarration] = useState(false);
 
     const days = itinerary?.days || [];
     const accommodation = itinerary?.accommodation;
@@ -127,6 +132,12 @@ export default function ItineraryView({
                         >
                             ← Back
                         </Link>
+                        <button
+                            onClick={() => setShowNarration(true)}
+                            className="rounded-lg gradient-bg px-3 py-1.5 text-xs font-medium text-white hover:shadow-md transition-all"
+                        >
+                            🔊 Listen
+                        </button>
                     </div>
 
                     {/* Day tabs */}
@@ -347,42 +358,128 @@ export default function ItineraryView({
                             Group total: <span className="font-semibold text-foreground">${budgetSummary.group_total?.toLocaleString()}</span>
                         </p>
 
+                        {/* Budget warning banner */}
+                        {(() => {
+                            const overBudgetMembers = Object.entries(budgetSummary.per_person || {}).filter(
+                                ([name, b]) => memberBudgets[name] != null && b.total > memberBudgets[name]
+                            );
+                            if (overBudgetMembers.length === 0) return null;
+                            return (
+                                <div className="mb-6 rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3">
+                                    <p className="text-sm font-semibold text-amber-900">
+                                        ⚠️ Heads up — this plan may exceed some budgets
+                                    </p>
+                                    <div className="mt-2 space-y-1">
+                                        {overBudgetMembers.map(([name, b]) => {
+                                            const overBy = b.total - memberBudgets[name];
+                                            return (
+                                                <p key={name} className="text-xs text-amber-800">
+                                                    {name}'s estimate (${b.total.toLocaleString()}) is ${overBy.toLocaleString()} over their ${memberBudgets[name].toLocaleString()} budget
+                                                </p>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
                         <div className="grid gap-4 sm:grid-cols-2">
                             {Object.entries(budgetSummary.per_person || {}).map(
-                                ([name, budget]) => (
-                                    <div
-                                        key={name}
-                                        className="rounded-xl border border-border bg-card p-4"
-                                    >
-                                        <h3 className="font-semibold text-foreground">{name}</h3>
-                                        <p className="text-xl font-bold gradient-text mt-1">
-                                            ${budget.total?.toLocaleString()}
-                                        </p>
-                                        <div className="mt-3 space-y-2">
-                                            {[
-                                                { label: "🏨 Accommodation", value: budget.accommodation },
-                                                { label: "🍽️ Food", value: budget.food },
-                                                { label: "🎯 Activities", value: budget.activities },
-                                                { label: "🚗 Transportation", value: budget.transportation },
-                                            ].map((item) => (
-                                                <div
-                                                    key={item.label}
-                                                    className="flex justify-between text-xs text-muted"
-                                                >
-                                                    <span>{item.label}</span>
-                                                    <span className="font-medium text-foreground">
-                                                        ${item.value?.toLocaleString() || 0}
-                                                    </span>
+                                ([name, budget]) => {
+                                    const stated = memberBudgets[name];
+                                    let budgetColor = "border-border";
+                                    let barColor = "gradient-bg";
+                                    let statusLabel = "";
+                                    let statusClass = "";
+
+                                    if (stated != null) {
+                                        const ratio = budget.total / stated;
+                                        if (ratio > 1) {
+                                            budgetColor = "border-red-300 ring-1 ring-red-200";
+                                            barColor = "bg-red-500";
+                                            statusLabel = `$${(budget.total - stated).toLocaleString()} over budget`;
+                                            statusClass = "text-red-600";
+                                        } else if (ratio > 0.9) {
+                                            budgetColor = "border-amber-300 ring-1 ring-amber-200";
+                                            barColor = "bg-amber-500";
+                                            statusLabel = "Within 10% of budget";
+                                            statusClass = "text-amber-600";
+                                        } else {
+                                            budgetColor = "border-emerald-300 ring-1 ring-emerald-200";
+                                            barColor = "bg-emerald-500";
+                                            statusLabel = `$${(stated - budget.total).toLocaleString()} under budget`;
+                                            statusClass = "text-emerald-600";
+                                        }
+                                    }
+
+                                    return (
+                                        <div
+                                            key={name}
+                                            className={`rounded-xl border bg-card p-4 ${budgetColor}`}
+                                        >
+                                            <h3 className="font-semibold text-foreground">{name}</h3>
+                                            <p className="text-xl font-bold gradient-text mt-1">
+                                                ${budget.total?.toLocaleString()}
+                                            </p>
+
+                                            {/* Budget bar */}
+                                            {stated != null && (
+                                                <div className="mt-2">
+                                                    <div className="flex justify-between text-[10px] text-muted mb-1">
+                                                        <span>Estimated</span>
+                                                        <span>Budget: ${stated.toLocaleString()}</span>
+                                                    </div>
+                                                    <div className="h-2 rounded-full bg-border overflow-hidden">
+                                                        <div
+                                                            className={`h-full rounded-full transition-all ${barColor}`}
+                                                            style={{ width: `${Math.min((budget.total / stated) * 100, 100)}%` }}
+                                                        />
+                                                    </div>
+                                                    <p className={`text-[10px] font-medium mt-1 ${statusClass}`}>
+                                                        {statusLabel}
+                                                    </p>
                                                 </div>
-                                            ))}
+                                            )}
+
+                                            <div className="mt-3 space-y-2">
+                                                {[
+                                                    { label: "🏨 Accommodation", value: budget.accommodation },
+                                                    { label: "🍽️ Food", value: budget.food },
+                                                    { label: "🎯 Activities", value: budget.activities },
+                                                    { label: "🚗 Transportation", value: budget.transportation },
+                                                ].map((item) => (
+                                                    <div
+                                                        key={item.label}
+                                                        className="flex justify-between text-xs text-muted"
+                                                    >
+                                                        <span>{item.label}</span>
+                                                        <span className="font-medium text-foreground">
+                                                            ${item.value?.toLocaleString() || 0}
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )
+                                    );
+                                }
                             )}
                         </div>
                     </div>
                 )}
             </div>
+
+            {/* Narration player modal */}
+            {showNarration && (
+                <Suspense fallback={null}>
+                    <NarrationPlayer
+                        tripId={trip.id}
+                        itinerary={itinerary}
+                        destination={destination}
+                        members={[]}
+                        onClose={() => setShowNarration(false)}
+                    />
+                </Suspense>
+            )}
         </div>
     );
 }

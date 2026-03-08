@@ -81,7 +81,11 @@ Add a confidence field to each activity: 'verified' if you're very confident it 
 
 GROUNDING: You have access to Google Search. USE IT to verify every hotel, restaurant, and attraction you recommend actually exists and is currently open. Search for current prices, hours, and addresses. Do not recommend any place you cannot verify through search. Include the source of your pricing data where possible.
 
-For flight cost estimates, search for typical flight costs to the destination to get realistic fare estimates. Reference the airports by their IATA codes.`;
+For flight cost estimates, search for typical flight costs to the destination to get realistic fare estimates. Reference the airports by their IATA codes.
+
+BUDGET IS A HARD CONSTRAINT. Always try to keep each person's total cost at or below their stated budget. If it's impossible to stay within everyone's budget for this destination, prioritize keeping costs down and suggest where each person can cut costs. Never silently exceed someone's budget — always flag it explicitly.
+
+If any member's total estimated cost exceeds their stated budget, suggest specific cost-saving alternatives for that person. For example: a cheaper hotel option, free activities that replace paid ones, or budget meal alternatives. Include these as a "savings_tips" field for the affected members in the budget_summary.per_person object.`;
 
 export async function POST(
   request: Request,
@@ -164,6 +168,44 @@ ${trip.end_date ? `End Date: ${trip.end_date}` : ""}`;
   try {
     const itinerary = await askGeminiJSON(SYSTEM_PROMPT, userMessage, 2, true);
 
+    // ── Budget warnings: compare each member's total to their stated budget ──
+    const budgetWarnings: {
+      user: string;
+      budget: number;
+      estimated_total: number;
+      over_by: number;
+      suggestion: string;
+    }[] = [];
+
+    const budgetSummary = (itinerary as any)?.budget_summary;
+    if (budgetSummary?.per_person && preferences) {
+      for (const pref of preferences) {
+        const u = users?.find((u) => u.id === pref.user_id);
+        const memberName = u?.name || u?.email?.split("@")[0] || "Unknown";
+        const memberBudget = pref.budget_max;
+
+        if (memberBudget == null) continue;
+
+        // Find this member in the budget summary (match by name)
+        const memberSummary = budgetSummary.per_person[memberName];
+        if (!memberSummary) continue;
+
+        const estimatedTotal = memberSummary.total;
+        if (estimatedTotal > memberBudget) {
+          const overBy = estimatedTotal - memberBudget;
+          const savingsTips = memberSummary.savings_tips;
+          budgetWarnings.push({
+            user: memberName,
+            budget: memberBudget,
+            estimated_total: estimatedTotal,
+            over_by: overBy,
+            suggestion: savingsTips ||
+              `${memberName} could save ~$${overBy} by choosing budget-friendly options for accommodation and meals.`,
+          });
+        }
+      }
+    }
+
     // Save to DB
     const { error: saveError } = await supabase.from("itineraries").insert({
       trip_id: tripId,
@@ -171,7 +213,7 @@ ${trip.end_date ? `End Date: ${trip.end_date}` : ""}`;
       itinerary_data: itinerary,
       location_score: null,
       location_reasoning: null,
-      budget_breakdown: (itinerary as Record<string, unknown>).budget_summary || null,
+      budget_breakdown: budgetSummary || null,
     });
 
     if (saveError) {
@@ -184,7 +226,10 @@ ${trip.end_date ? `End Date: ${trip.end_date}` : ""}`;
       .update({ status: "complete", destination })
       .eq("id", tripId);
 
-    return NextResponse.json({ itinerary });
+    return NextResponse.json({
+      itinerary,
+      ...(budgetWarnings.length > 0 ? { budget_warnings: budgetWarnings } : {}),
+    });
   } catch (err) {
     console.error("Itinerary error:", err);
     return NextResponse.json(

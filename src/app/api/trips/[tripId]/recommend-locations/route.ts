@@ -104,9 +104,71 @@ ${JSON.stringify(
             true // Enable Google Search grounding
         );
 
+        let recommendations = result.recommendations || [];
+
+        // ── Budget feasibility check ──
+        // Fetch all member budgets to find the lowest
+        const { data: preferences } = await supabase
+            .from("preferences")
+            .select("user_id, budget_max")
+            .eq("trip_id", tripId);
+
+        const { data: users } = await supabase
+            .from("users")
+            .select("id, name, email")
+            .in("id", preferences?.map((p) => p.user_id) || []);
+
+        const memberBudgets = preferences
+            ?.filter((p) => p.budget_max != null)
+            .map((p) => {
+                const u = users?.find((u) => u.id === p.user_id);
+                return {
+                    name: u?.name || u?.email?.split("@")[0] || "Someone",
+                    budget: p.budget_max as number,
+                };
+            }) || [];
+
+        if (memberBudgets.length > 0) {
+            const lowestBudgetMember = memberBudgets.reduce((min, m) =>
+                m.budget < min.budget ? m : min
+            );
+            const lowestBudget = lowestBudgetMember.budget;
+
+            // Filter out destinations over the lowest budget
+            const affordable = recommendations.filter(
+                (rec) => rec.estimatedBudgetPerPerson <= lowestBudget
+            );
+
+            if (affordable.length === 0 && recommendations.length > 0) {
+                // All destinations exceed the lowest budget
+                const cheapest = recommendations.reduce((min, rec) =>
+                    rec.estimatedBudgetPerPerson < min.estimatedBudgetPerPerson ? rec : min
+                );
+
+                return NextResponse.json({
+                    status: "budget_insufficient",
+                    lowest_budget: lowestBudget,
+                    lowest_budget_member: lowestBudgetMember.name,
+                    cheapest_destination: cheapest.name,
+                    cheapest_estimated_cost: cheapest.estimatedBudgetPerPerson,
+                    message: `The most affordable matching destination (${cheapest.name}) would cost ~$${cheapest.estimatedBudgetPerPerson}/person, but ${lowestBudgetMember.name}'s budget is $${lowestBudget}.`,
+                    options: [
+                        `Increase the minimum budget to $${cheapest.estimatedBudgetPerPerson}`,
+                        "Adjust preferences to unlock cheaper destinations",
+                    ],
+                    all_recommendations: recommendations, // Include for "Show Plans Anyway"
+                });
+            }
+
+            // Use only affordable destinations (or all if no budgets set)
+            if (affordable.length > 0) {
+                recommendations = affordable;
+            }
+        }
+
         // Save recommendations to DB
-        if (result.recommendations) {
-            const inserts = result.recommendations.map((rec) => ({
+        if (recommendations.length > 0) {
+            const inserts = recommendations.map((rec) => ({
                 trip_id: tripId,
                 destination: rec.name,
                 score: rec.score,
@@ -119,7 +181,7 @@ ${JSON.stringify(
             await supabase.from("location_recommendations").insert(inserts);
         }
 
-        return NextResponse.json(result);
+        return NextResponse.json({ recommendations });
     } catch (err) {
         console.error("Recommendation error:", err);
         return NextResponse.json(
