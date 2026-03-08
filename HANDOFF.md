@@ -107,8 +107,16 @@ src/
 
 ### Phase 5 & Stretch Goals
 - **Polish & Responsive Design:** Final mobile breakpoint checks, animation tuning.
-- **Deployment:** Containerization and deployment to a Vultr VPS.
 - **Stretch:** Flight/Hotel live API integration (currently handled by Gemini Google Grounding).
+
+## Deployment
+The app is deployed directly (no Docker) on a Vultr VPS (Ubuntu 24.04) at **http://144.202.69.28.nip.io:3000**.
+
+To deploy:
+```bash
+ssh user@144.202.69.28
+cd ~/HackCU-TripAi && git pull origin main && npm run build && pm2 restart tripsync
+```
 
 ## Database Schema
 - **`users`**

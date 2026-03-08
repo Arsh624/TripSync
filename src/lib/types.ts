@@ -81,6 +81,10 @@ export interface Activity {
     category: "food" | "activity" | "transportation" | "free";
     reasoning: string;
     dietary_notes?: string;
+    lat?: number;
+    lng?: number;
+    mapQuery?: string;
+    place?: string;
 }
 
 export interface DayPlan {

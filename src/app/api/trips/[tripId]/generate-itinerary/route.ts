@@ -21,7 +21,11 @@ const SYSTEM_PROMPT = `You are TripSync's itinerary planner. Create a day-by-day
           "category": "food" | "activity" | "transportation" | "free",
           "reasoning": "Why this was chosen, which preferences it serves",
           "confidence": "verified" | "suggested",
-          "dietary_notes": "optional — which dietary restrictions this accommodates"
+          "dietary_notes": "optional — which dietary restrictions this accommodates",
+          "lat": 32.0809,
+          "lng": -81.0912,
+          "mapQuery": "Forsyth+Park+Savannah+GA",
+          "place": "Forsyth Park, Savannah, GA"
         }
       ]
     }
@@ -76,6 +80,14 @@ TRANSPORTATION: Include a travel section with flight or driving guidance. If the
 RESTAURANTS & ACTIVITIES: Only recommend restaurants and attractions you are highly confident exist. Prefer well-known, established places over obscure ones. For restaurants, include the cuisine type and price range. If you're not sure a specific place exists, describe the type of place instead (e.g., 'a waterfront seafood restaurant in the $15-25 range' rather than inventing a name).
 
 For every restaurant suggestion, note which dietary restrictions it can accommodate.
+
+For EVERY activity/stop in the itinerary, include these additional fields:
+- lat: latitude coordinate (number)
+- lng: longitude coordinate (number)
+- mapQuery: URL-encoded string in format 'Place+Name+City+State' for Google Maps links
+- place: human-readable location string like 'Forsyth Park, Savannah, GA'
+
+Use your knowledge and Google Search to get accurate coordinates for each location. These must be real coordinates that will place a marker correctly on a map.
 
 Add a confidence field to each activity: 'verified' if you're very confident it exists, 'suggested' if it's a general recommendation.
 

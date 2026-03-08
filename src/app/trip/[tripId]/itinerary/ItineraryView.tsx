@@ -2,8 +2,10 @@
 
 import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 
 const NarrationPlayer = lazy(() => import("@/components/NarrationPlayer"));
+const DayMap = dynamic(() => import("@/components/DayMap"), { ssr: false });
 
 interface Activity {
     time: string;
@@ -16,6 +18,10 @@ interface Activity {
     reasoning: string;
     confidence?: "verified" | "suggested";
     dietary_notes?: string;
+    lat?: number;
+    lng?: number;
+    mapQuery?: string;
+    place?: string;
 }
 
 interface Day {
@@ -104,6 +110,7 @@ export default function ItineraryView({
     const [activeDay, setActiveDay] = useState(-3); // Start on overview
     const [showNarration, setShowNarration] = useState(false);
     const [viewMode, setViewMode] = useState<"group" | "my">("group");
+    const [hoveredStop, setHoveredStop] = useState<number | null>(null);
 
     // Filter activities for "My Schedule" mode
     const isMyActivity = (activity: Activity) => {
@@ -287,7 +294,34 @@ export default function ItineraryView({
                 )}
 
                 {/* Day view */}
-                {activeDay >= 0 && days[activeDay] && (
+                {activeDay >= 0 && days[activeDay] && (() => {
+                    const dayActivities = days[activeDay].activities.filter(isMyActivity);
+                    const mapStops = dayActivities
+                        .map((a, i) => (a.lat != null && a.lng != null ? {
+                            index: i,
+                            name: a.name,
+                            time: a.time,
+                            description: a.description,
+                            lat: a.lat,
+                            lng: a.lng,
+                            mapQuery: a.mapQuery,
+                            place: a.place,
+                            category: a.category,
+                        } : null))
+                        .filter(Boolean) as { index: number; name: string; time: string; description: string; lat: number; lng: number; mapQuery?: string; place?: string; category: string }[];
+
+                    // Build Google Maps multi-stop directions URL
+                    const stopsWithPlace = dayActivities.filter((a) => a.place);
+                    const fullRouteUrl = stopsWithPlace.length >= 2
+                        ? `https://www.google.com/maps/dir/${stopsWithPlace.map((a) => encodeURIComponent(a.place!)).join("/")}`
+                        : null;
+
+                    const MARKER_COLORS = [
+                        "#6366f1", "#ec4899", "#f59e0b", "#10b981", "#06b6d4",
+                        "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#3b82f6",
+                    ];
+
+                    return (
                     <div className="animate-fade-in">
                         <div className="mb-6">
                             <h2 className="text-2xl font-bold text-foreground">
@@ -295,6 +329,54 @@ export default function ItineraryView({
                             </h2>
                             <p className="text-sm text-muted mt-1">{days[activeDay].date}</p>
                         </div>
+
+                        {/* Leaflet Map */}
+                        {mapStops.length > 0 && (
+                            <div className="mb-6 space-y-3">
+                                <DayMap stops={mapStops} highlightedIndex={hoveredStop} />
+
+                                {/* Legend chips */}
+                                <div className="flex flex-wrap gap-2">
+                                    {mapStops.map((stop, i) => (
+                                        <span
+                                            key={i}
+                                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-sm"
+                                        >
+                                            <span
+                                                style={{
+                                                    width: 18,
+                                                    height: 18,
+                                                    borderRadius: "50%",
+                                                    background: MARKER_COLORS[i % MARKER_COLORS.length],
+                                                    color: "white",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    justifyContent: "center",
+                                                    fontSize: 10,
+                                                    fontWeight: 700,
+                                                    flexShrink: 0,
+                                                }}
+                                            >
+                                                {i + 1}
+                                            </span>
+                                            {stop.name}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                {/* Open Full Route button */}
+                                {fullRouteUrl && (
+                                    <a
+                                        href={fullRouteUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-card-hover transition-all shadow-sm"
+                                    >
+                                        🗺️ Open Full Route in Google Maps
+                                    </a>
+                                )}
+                            </div>
+                        )}
 
                         {/* Timeline */}
                         <div className="relative">
@@ -318,7 +400,12 @@ export default function ItineraryView({
                                     const isExpanded = expandedReasoning === reasoningKey;
 
                                     return (
-                                        <div key={i} className="relative flex gap-4">
+                                        <div
+                                            key={i}
+                                            className="relative flex gap-4"
+                                            onMouseEnter={() => setHoveredStop(i)}
+                                            onMouseLeave={() => setHoveredStop(null)}
+                                        >
                                             {/* Timeline dot */}
                                             <div
                                                 className={`relative z-10 mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${typeStyle.bg} ${typeStyle.border} border`}
@@ -360,6 +447,16 @@ export default function ItineraryView({
                                                             <p className="mt-1 text-xs text-emerald-600">
                                                                 🥗 {activity.dietary_notes}
                                                             </p>
+                                                        )}
+                                                        {activity.mapQuery && (
+                                                            <a
+                                                                href={`https://www.google.com/maps/search/?api=1&query=${activity.mapQuery}`}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                                                            >
+                                                                📍 View on Maps
+                                                            </a>
                                                         )}
                                                     </div>
                                                     {activity.estimated_cost_pp > 0 && (
@@ -413,7 +510,8 @@ export default function ItineraryView({
                                 </div>
                             )}
                     </div>
-                )}
+                    );
+                })()}
 
                 {/* Budget view */}
                 {activeDay === -2 && budgetSummary && (
