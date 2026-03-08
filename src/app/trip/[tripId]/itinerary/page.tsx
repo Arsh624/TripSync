@@ -70,6 +70,13 @@ export default async function ItineraryPage({ params }: ItineraryPageProps) {
         }
     }
 
+    // Get current user's name for My Schedule filter
+    const currentUserObj = users?.find((u) => u.id === user.id);
+    const currentUserName =
+        currentUserObj?.name ||
+        currentUserObj?.email?.split("@")[0] ||
+        undefined;
+
     return (
         <ItineraryView
             trip={trip}
@@ -77,6 +84,7 @@ export default async function ItineraryPage({ params }: ItineraryPageProps) {
             destination={itinerary.destination}
             members={users || []}
             memberBudgets={memberBudgets}
+            currentUserName={currentUserName}
         />
     );
 }

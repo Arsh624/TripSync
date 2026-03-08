@@ -12,6 +12,16 @@ export default async function DashboardPage() {
         redirect("/");
     }
 
+    // Get current user's display name
+    const { data: currentUser } = await supabase
+        .from("users")
+        .select("name, email")
+        .eq("id", user.id)
+        .single();
+
+    const userName =
+        currentUser?.name || currentUser?.email?.split("@")[0] || "Unknown";
+
     // Fetch trips the user is a member of
     const { data: memberships } = await supabase
         .from("trip_members")
@@ -33,6 +43,8 @@ export default async function DashboardPage() {
         is_leader: boolean;
         has_submitted: boolean;
         member_count: number;
+        submitted_count: number;
+        my_estimated_cost: number | null;
     }> = [];
 
     if (memberships && memberships.length > 0) {
@@ -44,16 +56,51 @@ export default async function DashboardPage() {
             .order("created_at", { ascending: false });
 
         if (tripData) {
-            // Get member counts for each trip
+            // Get all members with submission status for each trip
             const { data: allMembers } = await supabase
                 .from("trip_members")
-                .select("trip_id")
+                .select("trip_id, has_submitted")
                 .in("trip_id", tripIds);
 
             const memberCounts: Record<string, number> = {};
+            const submittedCounts: Record<string, number> = {};
             allMembers?.forEach((m) => {
                 memberCounts[m.trip_id] = (memberCounts[m.trip_id] || 0) + 1;
+                if (m.has_submitted) {
+                    submittedCounts[m.trip_id] = (submittedCounts[m.trip_id] || 0) + 1;
+                }
             });
+
+            // Fetch itineraries for complete trips to get the user's cost
+            const completeTripIds = tripData
+                .filter((t) => t.status === "complete")
+                .map((t) => t.id);
+
+            const userCosts: Record<string, number | null> = {};
+            if (completeTripIds.length > 0) {
+                const { data: itineraries } = await supabase
+                    .from("itineraries")
+                    .select("trip_id, itinerary_data")
+                    .in("trip_id", completeTripIds);
+
+                if (itineraries) {
+                    for (const itin of itineraries) {
+                        const perPerson = itin.itinerary_data?.budget_summary?.per_person;
+                        if (!perPerson) continue;
+                        // Find user's entry (exact then case-insensitive)
+                        let myBudget = perPerson[userName];
+                        if (!myBudget) {
+                            const key = Object.keys(perPerson).find(
+                                (k) => k.toLowerCase() === userName.toLowerCase()
+                            );
+                            if (key) myBudget = perPerson[key];
+                        }
+                        if (myBudget?.total != null) {
+                            userCosts[itin.trip_id] = myBudget.total;
+                        }
+                    }
+                }
+            }
 
             trips = tripData.map((trip) => ({
                 ...trip,
@@ -61,19 +108,21 @@ export default async function DashboardPage() {
                 has_submitted:
                     memberships.find((m) => m.trip_id === trip.id)?.has_submitted ?? false,
                 member_count: memberCounts[trip.id] || 0,
+                submitted_count: submittedCounts[trip.id] || 0,
+                my_estimated_cost: userCosts[trip.id] ?? null,
             }));
         }
     }
 
     const statusColors: Record<string, string> = {
         collecting:
-            "bg-amber-50 text-amber-700 border-amber-200",
+            "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/40",
         ready:
-            "bg-blue-50 text-blue-700 border-blue-200",
+            "bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/40",
         planning:
-            "bg-violet-50 text-violet-700 border-violet-200",
+            "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-950/30 dark:text-violet-300 dark:border-violet-500/40",
         complete:
-            "bg-emerald-50 text-emerald-700 border-emerald-200",
+            "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/40",
     };
 
     const statusLabels: Record<string, string> = {
@@ -125,73 +174,145 @@ export default async function DashboardPage() {
                 ) : (
                     /* Trip cards */
                     <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                        {trips.map((trip) => (
-                            <Link
-                                key={trip.id}
-                                href={
-                                    trip.status === "complete"
-                                        ? `/trip/${trip.id}/itinerary`
-                                        : trip.is_leader
-                                            ? `/trip/${trip.id}/status`
-                                            : trip.has_submitted
-                                                ? `/trip/${trip.id}/status`
-                                                : `/trip/${trip.id}/preferences`
-                                }
-                                className="group rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-lg hover:border-primary-light hover:-translate-y-1"
-                            >
-                                <div className="flex items-start justify-between">
-                                    <div className="flex-1">
-                                        <h3 className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors">
-                                            {trip.name}
-                                        </h3>
-                                        <div className="mt-2 flex flex-wrap items-center gap-2">
-                                            <span
-                                                className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColors[trip.status] || statusColors.collecting
-                                                    }`}
+                        {trips.map((trip) => {
+                            const isComplete = trip.status === "complete";
+                            const isCollecting = trip.status === "collecting";
+
+                            const cardHref = isComplete
+                                ? `/trip/${trip.id}/itinerary`
+                                : trip.is_leader
+                                    ? `/trip/${trip.id}/status`
+                                    : trip.has_submitted
+                                        ? `/trip/${trip.id}/status`
+                                        : `/trip/${trip.id}/preferences`;
+
+                            // Format dates for complete trips
+                            const formatDate = (d: string | null) => {
+                                if (!d) return null;
+                                return new Date(d + "T00:00:00").toLocaleDateString("en-US", {
+                                    month: "short",
+                                    day: "numeric",
+                                });
+                            };
+
+                            return (
+                                <div
+                                    key={trip.id}
+                                    className="group rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-lg hover:border-primary-light hover:-translate-y-1"
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <Link
+                                                href={cardHref}
+                                                className="text-lg font-semibold text-foreground group-hover:text-primary transition-colors"
                                             >
-                                                {statusLabels[trip.status] || trip.status}
-                                            </span>
-                                            {trip.is_leader && (
-                                                <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium text-indigo-700">
-                                                    👑 Leader
+                                                {trip.name}
+                                            </Link>
+                                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                                                <span
+                                                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-medium ${statusColors[trip.status] || statusColors.collecting}`}
+                                                >
+                                                    {statusLabels[trip.status] || trip.status}
                                                 </span>
+                                                {trip.is_leader && (
+                                                    <span className="inline-flex items-center rounded-full bg-indigo-50 border border-indigo-200 px-2.5 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-300 dark:border-indigo-500/40">
+                                                        👑 Leader
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <Link href={cardHref}>
+                                            <svg
+                                                className="h-5 w-5 text-muted transition-transform group-hover:translate-x-1 group-hover:text-primary"
+                                                fill="none"
+                                                viewBox="0 0 24 24"
+                                                stroke="currentColor"
+                                            >
+                                                <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M9 5l7 7-7 7"
+                                                />
+                                            </svg>
+                                        </Link>
+                                    </div>
+
+                                    {/* Info row */}
+                                    <div className="mt-4 flex items-center gap-4 text-sm text-muted">
+                                        <span className="flex items-center gap-1">
+                                            👥 {trip.member_count}
+                                            {trip.group_size ? ` / ${trip.group_size}` : ""} travelers
+                                        </span>
+                                        {trip.trip_duration_days && (
+                                            <span className="flex items-center gap-1">
+                                                📅 {trip.trip_duration_days} days
+                                            </span>
+                                        )}
+                                    </div>
+
+                                    {trip.destination && (
+                                        <div className="mt-2 text-sm text-muted">
+                                            📍 {trip.destination}
+                                        </div>
+                                    )}
+
+                                    {/* Complete trip summary */}
+                                    {isComplete && (
+                                        <div className="mt-4 pt-4 border-t border-border">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    {trip.start_date && trip.end_date && (
+                                                        <p className="text-xs text-muted">
+                                                            🗓️ {formatDate(trip.start_date)} — {formatDate(trip.end_date)}
+                                                        </p>
+                                                    )}
+                                                    {trip.my_estimated_cost != null && (
+                                                        <p className="text-lg font-bold gradient-text mt-1">
+                                                            ${trip.my_estimated_cost.toLocaleString()}
+                                                            <span className="text-xs font-normal text-muted ml-1">
+                                                                your est. cost
+                                                            </span>
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <Link
+                                                    href={`/trip/${trip.id}/itinerary`}
+                                                    className="rounded-lg gradient-bg px-4 py-2 text-xs font-semibold text-white shadow-sm hover:shadow-md transition-all"
+                                                >
+                                                    View Itinerary →
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Collecting status: show submission progress */}
+                                    {isCollecting && (
+                                        <div className="mt-4 pt-4 border-t border-border">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="text-xs text-muted">Preferences submitted</span>
+                                                <span className="text-xs font-semibold text-foreground">
+                                                    {trip.submitted_count} / {trip.member_count}
+                                                </span>
+                                            </div>
+                                            <div className="h-2 rounded-full bg-border overflow-hidden">
+                                                <div
+                                                    className="h-full rounded-full bg-amber-500 transition-all duration-500"
+                                                    style={{
+                                                        width: `${trip.member_count > 0 ? (trip.submitted_count / trip.member_count) * 100 : 0}%`,
+                                                    }}
+                                                />
+                                            </div>
+                                            {trip.submitted_count === trip.member_count && trip.member_count > 0 && (
+                                                <p className="text-xs text-emerald-600 dark:text-emerald-400 mt-1.5 font-medium">
+                                                    ✅ Everyone&apos;s in — ready to plan!
+                                                </p>
                                             )}
                                         </div>
-                                    </div>
-                                    <svg
-                                        className="h-5 w-5 text-muted transition-transform group-hover:translate-x-1 group-hover:text-primary"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                    >
-                                        <path
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            strokeWidth={2}
-                                            d="M9 5l7 7-7 7"
-                                        />
-                                    </svg>
-                                </div>
-
-                                <div className="mt-4 flex items-center gap-4 text-sm text-muted">
-                                    <span className="flex items-center gap-1">
-                                        👥 {trip.member_count}
-                                        {trip.group_size ? ` / ${trip.group_size}` : ""} members
-                                    </span>
-                                    {trip.trip_duration_days && (
-                                        <span className="flex items-center gap-1">
-                                            📅 {trip.trip_duration_days} days
-                                        </span>
                                     )}
                                 </div>
-
-                                {trip.destination && (
-                                    <div className="mt-2 text-sm text-muted">
-                                        📍 {trip.destination}
-                                    </div>
-                                )}
-                            </Link>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

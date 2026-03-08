@@ -77,6 +77,7 @@ interface ItineraryViewProps {
     destination: string;
     members: Member[];
     memberBudgets?: Record<string, number>;
+    currentUserName?: string;
 }
 
 const typeColors: Record<string, { bg: string; border: string; text: string; label: string }> = {
@@ -97,10 +98,22 @@ export default function ItineraryView({
     itinerary,
     destination,
     memberBudgets = {},
+    currentUserName,
 }: ItineraryViewProps) {
     const [expandedReasoning, setExpandedReasoning] = useState<string | null>(null);
     const [activeDay, setActiveDay] = useState(-3); // Start on overview
     const [showNarration, setShowNarration] = useState(false);
+    const [viewMode, setViewMode] = useState<"group" | "my">("group");
+
+    // Filter activities for "My Schedule" mode
+    const isMyActivity = (activity: Activity) => {
+        if (viewMode === "group" || !currentUserName) return true;
+        return activity.participants.some(
+            (p) =>
+                p.toLowerCase() === "everyone" ||
+                p.toLowerCase() === currentUserName.toLowerCase()
+        );
+    };
 
     const days = itinerary?.days || [];
     const accommodation = itinerary?.accommodation;
@@ -139,6 +152,40 @@ export default function ItineraryView({
                             🔊 Listen
                         </button>
                     </div>
+
+                    {/* Group / My Schedule toggle */}
+                    {currentUserName && (
+                        <div className="mt-2 flex items-center gap-1">
+                            <div className="inline-flex rounded-lg border border-border p-0.5 bg-card-hover">
+                                <button
+                                    onClick={() => setViewMode("group")}
+                                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                                        viewMode === "group"
+                                            ? "gradient-bg text-white shadow-sm"
+                                            : "text-muted hover:text-foreground"
+                                    }`}
+                                >
+                                    👥 Group View
+                                </button>
+                                <button
+                                    onClick={() => setViewMode("my")}
+                                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                                        viewMode === "my"
+                                            ? "bg-violet-500 text-white shadow-sm"
+                                            : "text-muted hover:text-foreground"
+                                    }`}
+                                >
+                                    🧍 My Schedule
+                                </button>
+                            </div>
+                            <Link
+                                href={`/trip/${trip.id}/budget`}
+                                className="ml-auto rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card-hover transition-all"
+                            >
+                                💰 My Budget
+                            </Link>
+                        </div>
+                    )}
 
                     {/* Day tabs */}
                     <div className="mt-2 flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
@@ -254,8 +301,19 @@ export default function ItineraryView({
                             <div className="absolute left-5 top-0 bottom-0 w-px bg-border" />
 
                             <div className="space-y-4">
-                                {days[activeDay].activities.map((activity, i) => {
-                                    const typeStyle = typeColors[activity.type] || typeColors.group;
+                                {days[activeDay].activities.filter(isMyActivity).map((activity, i) => {
+                                    // In "My Schedule" mode, use violet accent for personal activities
+                                    const isPersonalActivity =
+                                        viewMode === "my" &&
+                                        (activity.type === "solo" || activity.type === "subgroup");
+                                    const typeStyle = isPersonalActivity
+                                        ? {
+                                              bg: "bg-violet-50 dark:bg-violet-950/30",
+                                              border: "border-violet-300 dark:border-violet-500/40",
+                                              text: "text-violet-700 dark:text-violet-300",
+                                              label: activity.type === "solo" ? "🧍 Just You" : "👫 Subgroup",
+                                          }
+                                        : typeColors[activity.type] || typeColors.group;
                                     const reasoningKey = `${activeDay}-${i}`;
                                     const isExpanded = expandedReasoning === reasoningKey;
 
@@ -345,6 +403,15 @@ export default function ItineraryView({
                                 })}
                             </div>
                         </div>
+
+                        {/* Empty state for My Schedule */}
+                        {viewMode === "my" &&
+                            days[activeDay].activities.filter(isMyActivity).length === 0 && (
+                                <div className="text-center py-12 text-muted">
+                                    <p className="text-3xl mb-2">🏖️</p>
+                                    <p className="text-sm">No scheduled activities for you this day — free time!</p>
+                                </div>
+                            )}
                     </div>
                 )}
 
