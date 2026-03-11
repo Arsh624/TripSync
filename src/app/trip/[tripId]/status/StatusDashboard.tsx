@@ -69,7 +69,6 @@ export default function StatusDashboard({
                     filter: `trip_id=eq.${trip.id}`,
                 },
                 async () => {
-                    // Re-fetch all members when anything changes
                     const { data: updatedMembers } = await supabase
                         .from("trip_members")
                         .select("*")
@@ -112,7 +111,6 @@ export default function StatusDashboard({
         try {
             await navigator.clipboard.writeText(shareUrl);
         } catch {
-            // Fallback for non-HTTPS contexts
             const textarea = document.createElement("textarea");
             textarea.value = shareUrl;
             textarea.style.position = "fixed";
@@ -129,70 +127,70 @@ export default function StatusDashboard({
     const currentMember = members.find((m) => m.user_id === currentUserId);
 
     return (
-        <div className="min-h-screen pt-24 pb-16 page-transition">
+        <div className="min-h-screen pt-24 pb-16">
             <div className="mx-auto max-w-3xl px-4 sm:px-6">
                 {/* Header */}
-                <div className="text-center">
-                    <h1 className="text-3xl font-bold text-foreground">{trip.name}</h1>
-                    <div className="mt-3 flex flex-wrap justify-center gap-2">
+                <div className="text-center border-b-4 border-foreground pb-8">
+                    <h1 className="text-5xl md:text-7xl font-black uppercase tracking-tighter text-foreground leading-none">
+                        {trip.name}
+                    </h1>
+                    <div className="mt-6 flex flex-wrap justify-center gap-3">
                         {trip.trip_duration_days && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-indigo-50 border border-indigo-200 px-3 py-1 text-sm font-medium text-indigo-700">
-                                📅 {trip.trip_duration_days} days
+                            <span className="border-2 border-foreground px-4 py-2 text-xs font-black uppercase tracking-widest text-foreground">
+                                □ {trip.trip_duration_days} DAYS
                             </span>
                         )}
                         {trip.group_size && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-cyan-50 border border-cyan-200 px-3 py-1 text-sm font-medium text-cyan-700">
-                                👥 {trip.group_size} travelers
+                            <span className="border-2 border-foreground px-4 py-2 text-xs font-black uppercase tracking-widest text-foreground">
+                                □ {trip.group_size} TRAVELERS
                             </span>
                         )}
                         {trip.destination && (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-sm font-medium text-emerald-700">
-                                📍 {trip.destination}
+                            <span className="border-2 border-foreground bg-foreground px-4 py-2 text-xs font-black uppercase tracking-widest text-background">
+                                ⌖ {trip.destination.toUpperCase()}
                             </span>
                         )}
                     </div>
                 </div>
 
                 {/* Share Link Card */}
-                <div className="mt-8 rounded-2xl border border-indigo-200 bg-indigo-50/50 p-6">
-                    <div className="text-center">
-                        <h3 className="text-sm font-semibold text-indigo-700 uppercase tracking-wider">
-                            Share this link with your crew
-                        </h3>
-                        <div className="mt-3 flex items-center gap-2">
-                            <div className="flex-1 rounded-xl border border-indigo-200 bg-white px-4 py-3 font-mono text-sm text-foreground select-all overflow-x-auto">
-                                {shareUrl}
-                            </div>
-                            <button
-                                onClick={handleCopy}
-                                className={`shrink-0 rounded-xl px-4 py-3 text-sm font-semibold transition-all ${copied
-                                    ? "bg-emerald-500 text-white"
-                                    : "gradient-bg text-white hover:shadow-md hover:scale-105 active:scale-95"
-                                    }`}
-                            >
-                                {copied ? "✓ Copied!" : "Copy"}
-                            </button>
+                <div className="mt-8 border-4 border-foreground bg-background p-6">
+                    <h3 className="text-xs font-black uppercase tracking-widest text-foreground">
+                        SHARE THIS LINK WITH YOUR CREW
+                    </h3>
+                    <div className="mt-4 flex items-center gap-2">
+                        <div className="flex-1 border-2 border-foreground bg-background px-4 py-3 font-mono text-sm text-foreground select-all overflow-x-auto">
+                            {shareUrl}
                         </div>
-                        <p className="mt-2 text-xs text-indigo-600/70">
-                            Code: <span className="font-mono font-bold">{trip.share_code}</span>
-                        </p>
+                        <button
+                            onClick={handleCopy}
+                            className={`shrink-0 border-4 px-4 py-3 text-sm font-black uppercase tracking-widest transition-colors ${
+                                copied
+                                    ? "border-foreground bg-foreground text-background"
+                                    : "border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
+                            }`}
+                        >
+                            {copied ? "✓ COPIED" : "COPY"}
+                        </button>
                     </div>
+                    <p className="mt-3 text-xs font-bold uppercase tracking-widest text-foreground/60">
+                        CODE: <span className="font-mono font-black text-foreground">{trip.share_code}</span>
+                    </p>
                 </div>
 
-                {/* Progress */}
+                {/* Team Progress */}
                 <div className="mt-8">
                     <div className="flex items-center justify-between mb-3">
-                        <h2 className="text-lg font-semibold text-foreground">
-                            Team Progress
+                        <h2 className="text-2xl font-black uppercase tracking-tighter text-foreground">
+                            TEAM PROGRESS
                         </h2>
-                        <span className="text-sm text-muted">
-                            {submittedCount}/{members.length} submitted
+                        <span className="text-xs font-black uppercase tracking-widest text-foreground/60">
+                            {submittedCount}/{members.length} SUBMITTED
                         </span>
                     </div>
-                    <div className="h-3 rounded-full bg-border overflow-hidden">
+                    <div className="h-6 border-4 border-foreground bg-background overflow-hidden">
                         <div
-                            className={`h-full rounded-full transition-all duration-700 ease-out ${allSubmitted ? "bg-emerald-500" : "gradient-bg"
-                                }`}
+                            className="h-full bg-foreground transition-all duration-700 ease-out"
                             style={{
                                 width: `${members.length > 0 ? (submittedCount / members.length) * 100 : 0}%`,
                             }}
@@ -205,7 +203,7 @@ export default function StatusDashboard({
                     {members.map((member) => (
                         <div
                             key={member.id}
-                            className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition-all hover:shadow-sm"
+                            className="flex items-center gap-4 border-4 border-foreground bg-background p-4"
                         >
                             {/* Avatar */}
                             {member.user.avatar_url ? (
@@ -214,31 +212,31 @@ export default function StatusDashboard({
                                     alt=""
                                     width={40}
                                     height={40}
-                                    className="h-10 w-10 rounded-full object-cover"
+                                    className="h-10 w-10 object-cover border-2 border-foreground"
                                     referrerPolicy="no-referrer"
                                 />
                             ) : (
-                                <div className="flex h-10 w-10 items-center justify-center rounded-full gradient-bg text-white font-bold">
+                                <div className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-foreground text-background font-black text-sm">
                                     {member.user.name.charAt(0).toUpperCase()}
                                 </div>
                             )}
 
                             {/* Info */}
                             <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2">
-                                    <span className="font-medium text-foreground truncate">
+                                <div className="flex items-center gap-2 flex-wrap">
+                                    <span className="font-black uppercase tracking-tighter text-foreground truncate">
                                         {member.user.name}
                                     </span>
                                     {member.user_id === trip.leader_id && (
-                                        <span className="shrink-0 text-xs bg-indigo-50 border border-indigo-200 text-indigo-700 px-2 py-0.5 rounded-full font-medium">
-                                            👑 Leader
+                                        <span className="shrink-0 border-2 border-foreground bg-foreground text-background px-2 py-0.5 text-[10px] font-black uppercase tracking-widest">
+                                            ✹ LEADER
                                         </span>
                                     )}
                                     {member.user_id === currentUserId && (
-                                        <span className="shrink-0 text-xs text-muted">(You)</span>
+                                        <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-foreground/50">(YOU)</span>
                                     )}
                                 </div>
-                                <p className="text-xs text-muted truncate">
+                                <p className="text-xs font-bold uppercase tracking-widest text-foreground/50 truncate mt-0.5">
                                     {member.user.email}
                                 </p>
                             </div>
@@ -246,12 +244,12 @@ export default function StatusDashboard({
                             {/* Status */}
                             <div className="shrink-0">
                                 {member.has_submitted ? (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
-                                        ✓ Submitted
+                                    <span className="border-2 border-foreground bg-foreground px-3 py-1 text-xs font-black uppercase tracking-widest text-background">
+                                        ✓ DONE
                                     </span>
                                 ) : (
-                                    <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 border border-amber-200 px-3 py-1 text-xs font-medium text-amber-700">
-                                        ⏳ Pending
+                                    <span className="border-2 border-foreground bg-background px-3 py-1 text-xs font-black uppercase tracking-widest text-foreground">
+                                        ◗ PENDING
                                     </span>
                                 )}
                             </div>
@@ -265,40 +263,42 @@ export default function StatusDashboard({
                             (_, i) => (
                                 <div
                                     key={`empty-${i}`}
-                                    className="flex items-center gap-4 rounded-xl border border-dashed border-border bg-card/50 p-4"
+                                    className="flex items-center gap-4 border-4 border-dashed border-foreground/30 bg-background p-4"
                                 >
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-dashed border-border text-muted">
+                                    <div className="flex h-10 w-10 items-center justify-center border-2 border-dashed border-foreground/30 text-foreground/30 font-black">
                                         ?
                                     </div>
-                                    <span className="text-sm text-muted">
-                                        Waiting for someone to join...
+                                    <span className="text-sm font-bold uppercase tracking-widest text-foreground/40">
+                                        WAITING FOR SOMEONE TO JOIN...
                                     </span>
                                 </div>
                             )
                         )}
                 </div>
 
-                {/* Your action */}
+                {/* Fill in preferences CTA */}
                 {currentMember && !currentMember.has_submitted && (
                     <div className="mt-8">
                         <Link
                             href={`/trip/${trip.id}/preferences`}
-                            className="block w-full rounded-xl gradient-bg py-4 text-center text-lg font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                            className="block w-full border-4 border-foreground bg-background py-5 text-center text-xl font-black uppercase tracking-tighter text-foreground transition-colors hover:bg-foreground hover:text-background"
                         >
-                            Fill In Your Preferences ✏️
+                            FILL IN YOUR PREFERENCES ↗
                         </Link>
                     </div>
                 )}
 
                 {/* All submitted — Generate Plan */}
                 {allSubmitted && (
-                    <div className="mt-8 rounded-2xl border border-emerald-200 bg-emerald-50/50 p-6 text-center animate-fade-in">
-                        <div className="text-3xl mb-2">🎉</div>
-                        <h3 className="text-lg font-bold text-emerald-800">
-                            All preferences collected!
+                    <div className="mt-8 border-4 border-foreground bg-background p-6 text-center animate-fade-in">
+                        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center border-4 border-foreground bg-foreground text-background text-3xl font-black">
+                            ✹
+                        </div>
+                        <h3 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+                            ALL PREFERENCES IN
                         </h3>
-                        <p className="mt-1 text-sm text-emerald-700/80">
-                            Everyone&apos;s submitted. Time to let the AI work its magic.
+                        <p className="mt-2 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                            EVERYONE&apos;S SUBMITTED. TIME TO LET THE AI WORK.
                         </p>
                         {isLeader ? (
                             trip.destination ? (
@@ -306,14 +306,14 @@ export default function StatusDashboard({
                             ) : (
                                 <Link
                                     href={`/trip/${trip.id}/locations`}
-                                    className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg hover:scale-105 active:scale-95"
+                                    className="mt-6 inline-block border-4 border-foreground bg-foreground px-10 py-4 text-lg font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground"
                                 >
-                                    Generate Plan 🤖
+                                    GENERATE PLAN ↗
                                 </Link>
                             )
                         ) : (
-                            <p className="mt-3 text-sm text-emerald-600">
-                                The trip leader will generate the plan soon!
+                            <p className="mt-4 text-sm font-bold uppercase tracking-widest text-foreground/60">
+                                THE TRIP LEADER WILL GENERATE THE PLAN SOON.
                             </p>
                         )}
                     </div>
@@ -322,13 +322,12 @@ export default function StatusDashboard({
                 {/* Not all submitted yet */}
                 {!allSubmitted && members.length > 0 && (
                     <div className="mt-6 text-center">
-                        <p className="text-sm text-muted">
-                            ⏳ Waiting for{" "}
-                            <span className="font-medium text-foreground">
-                                {members.length - submittedCount} more
+                        <p className="text-sm font-bold uppercase tracking-widest text-foreground/60">
+                            ◗ WAITING FOR{" "}
+                            <span className="font-black text-foreground">
+                                {members.length - submittedCount} MORE
                             </span>{" "}
-                            {members.length - submittedCount === 1 ? "person" : "people"} to
-                            submit preferences
+                            {members.length - submittedCount === 1 ? "PERSON" : "PEOPLE"} TO SUBMIT
                         </p>
                     </div>
                 )}
@@ -348,12 +347,10 @@ function GenerateDirectButton({ tripId, destination }: { tripId: string; destina
         setError("");
 
         try {
-            // Step 1: Synthesize preferences
             const synthRes = await fetch(`/api/trips/${tripId}/synthesize`, { method: "POST" });
             const synthData = await synthRes.json();
             if (!synthRes.ok) throw new Error(synthData.error);
 
-            // Step 2: Skip recommendations, go straight to itinerary
             setPhase("generating");
             const itinRes = await fetch(`/api/trips/${tripId}/generate-itinerary`, {
                 method: "POST",
@@ -372,24 +369,24 @@ function GenerateDirectButton({ tripId, destination }: { tripId: string; destina
 
     if (phase === "synthesizing" || phase === "generating") {
         return (
-            <div className="mt-4">
-                <div className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-md animate-pulse">
-                    {phase === "synthesizing" ? "🧠 Analyzing preferences..." : `✨ Building ${destination} itinerary...`}
+            <div className="mt-6">
+                <div className="inline-flex items-center gap-2 border-4 border-foreground bg-foreground px-8 py-4 text-base font-black uppercase tracking-tighter text-background animate-pulse">
+                    {phase === "synthesizing" ? "ANALYZING PREFERENCES..." : `BUILDING ${destination.toUpperCase()} ITINERARY...`}
                 </div>
-                <p className="mt-2 text-xs text-emerald-600/70">This may take 10-20 seconds</p>
+                <p className="mt-3 text-xs font-bold uppercase tracking-widest text-foreground/50">THIS MAY TAKE 10-20 SECONDS</p>
             </div>
         );
     }
 
     if (phase === "error") {
         return (
-            <div className="mt-4">
-                <p className="text-sm text-red-600 mb-2">{error}</p>
+            <div className="mt-6">
+                <p className="text-sm font-bold uppercase tracking-widest text-foreground mb-3 border-4 border-foreground p-3">{error}</p>
                 <button
                     onClick={handleGenerate}
-                    className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-emerald-700"
+                    className="border-4 border-foreground bg-background px-8 py-4 text-base font-black uppercase tracking-tighter text-foreground transition-colors hover:bg-foreground hover:text-background"
                 >
-                    Try Again 🔄
+                    TRY AGAIN ←
                 </button>
             </div>
         );
@@ -398,9 +395,9 @@ function GenerateDirectButton({ tripId, destination }: { tripId: string; destina
     return (
         <button
             onClick={handleGenerate}
-            className="mt-4 inline-flex items-center gap-2 rounded-full bg-emerald-600 px-8 py-3 text-base font-semibold text-white shadow-md transition-all hover:bg-emerald-700 hover:shadow-lg hover:scale-105 active:scale-95"
+            className="mt-6 border-4 border-foreground bg-foreground px-10 py-4 text-lg font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground"
         >
-            Generate Plan for {destination} 🤖
+            GENERATE PLAN FOR {destination.toUpperCase()} ↗
         </button>
     );
 }

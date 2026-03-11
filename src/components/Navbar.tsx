@@ -48,14 +48,13 @@ export default function Navbar() {
     };
 
     return (
-        <nav className="fixed top-0 left-0 right-0 z-50 glass">
+        <nav className="fixed top-0 left-0 right-0 z-50 border-b-4 border-foreground bg-background">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div className="flex h-16 items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2 group">
-                        <span className="text-2xl">✈️</span>
-                        <span className="text-xl font-bold gradient-text group-hover:opacity-80 transition-opacity">
-                            TripSync
+                    <Link href="/" className="flex items-center gap-2">
+                        <span className="text-xl font-black uppercase tracking-tighter text-foreground">
+                            ⚑ TRIPSYNC
                         </span>
                     </Link>
 
@@ -64,7 +63,7 @@ export default function Navbar() {
                         {/* Theme toggle */}
                         <button
                             onClick={toggleTheme}
-                            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-foreground transition-all hover:border-primary-light hover:shadow-sm hover:scale-110 active:scale-90"
+                            className="flex h-9 w-9 items-center justify-center border-2 border-foreground bg-background text-foreground transition-colors hover:bg-foreground hover:text-background"
                             title={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
                         >
                             {theme === "dark" ? (
@@ -77,13 +76,14 @@ export default function Navbar() {
                                 </svg>
                             )}
                         </button>
+
                         {loading ? (
-                            <div className="h-8 w-20 bg-border rounded-full animate-pulse" />
+                            <div className="h-8 w-20 border-2 border-foreground animate-pulse" />
                         ) : user ? (
                             <div className="relative">
                                 <button
                                     onClick={() => setMenuOpen(!menuOpen)}
-                                    className="flex items-center gap-2 rounded-full border border-border px-3 py-1.5 transition-all hover:border-primary-light hover:shadow-sm"
+                                    className="flex items-center gap-2 border-2 border-foreground px-3 py-1.5 transition-colors hover:bg-foreground hover:text-background"
                                 >
                                     {user.user_metadata?.avatar_url ? (
                                         <img
@@ -91,21 +91,21 @@ export default function Navbar() {
                                             alt=""
                                             width={28}
                                             height={28}
-                                            className="h-7 w-7 rounded-full object-cover"
+                                            className="h-7 w-7 object-cover border-2 border-foreground"
                                             referrerPolicy="no-referrer"
                                         />
                                     ) : (
-                                        <div className="flex h-7 w-7 items-center justify-center rounded-full gradient-bg text-white text-xs font-bold">
+                                        <div className="flex h-7 w-7 items-center justify-center border-2 border-foreground bg-foreground text-background text-xs font-black">
                                             {(user.user_metadata?.name || user.email || "U")
                                                 .charAt(0)
                                                 .toUpperCase()}
                                         </div>
                                     )}
-                                    <span className="hidden sm:inline text-sm font-medium text-foreground">
+                                    <span className="hidden sm:inline text-sm font-black uppercase tracking-widest text-foreground">
                                         {user.user_metadata?.name || user.email?.split("@")[0]}
                                     </span>
                                     <svg
-                                        className={`h-4 w-4 text-muted transition-transform ${menuOpen ? "rotate-180" : ""}`}
+                                        className={`h-4 w-4 text-foreground transition-transform ${menuOpen ? "rotate-180" : ""}`}
                                         fill="none"
                                         viewBox="0 0 24 24"
                                         stroke="currentColor"
@@ -115,27 +115,27 @@ export default function Navbar() {
                                 </button>
 
                                 {menuOpen && (
-                                    <div className="absolute right-0 mt-2 w-48 rounded-xl border border-border bg-card shadow-lg animate-fade-in overflow-hidden">
+                                    <div className="absolute right-0 mt-1 w-48 border-4 border-foreground bg-background animate-fade-in overflow-hidden">
                                         <Link
                                             href="/dashboard"
                                             onClick={() => setMenuOpen(false)}
-                                            className="block px-4 py-2.5 text-sm text-foreground hover:bg-card-hover transition-colors"
+                                            className="block px-4 py-3 text-xs font-black uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-colors"
                                         >
-                                            🗺️ My Trips
+                                            □ MY TRIPS
                                         </Link>
                                         <Link
                                             href="/trip/new"
                                             onClick={() => setMenuOpen(false)}
-                                            className="block px-4 py-2.5 text-sm text-foreground hover:bg-card-hover transition-colors"
+                                            className="block px-4 py-3 text-xs font-black uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-colors"
                                         >
-                                            ➕ Plan a Trip
+                                            + PLAN A TRIP
                                         </Link>
-                                        <hr className="border-border" />
+                                        <div className="border-t-2 border-foreground" />
                                         <button
                                             onClick={handleSignOut}
-                                            className="block w-full px-4 py-2.5 text-left text-sm text-danger hover:bg-red-50 transition-colors"
+                                            className="block w-full px-4 py-3 text-left text-xs font-black uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-colors"
                                         >
-                                            Sign Out
+                                            SIGN OUT
                                         </button>
                                     </div>
                                 )}
@@ -143,9 +143,9 @@ export default function Navbar() {
                         ) : (
                             <button
                                 onClick={handleSignIn}
-                                className="rounded-full gradient-bg px-5 py-2 text-sm font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95"
+                                className="border-4 border-foreground bg-foreground px-5 py-2 text-sm font-black uppercase tracking-widest text-background transition-colors hover:bg-background hover:text-foreground"
                             >
-                                Sign in with Google
+                                SIGN IN ↗
                             </button>
                         )}
                     </div>

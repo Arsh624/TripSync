@@ -7,79 +7,39 @@ import type { User } from "@supabase/supabase-js";
 
 const features = [
   {
-    emoji: "🧠",
-    title: "AI-Powered Matching",
-    description:
-      "Our AI analyzes everyone's vibes, budgets, and dietary needs to find destinations the whole group will love.",
+    icon: "✺",
+    title: "AI MATCHING",
+    description: "WE ANALYZE VIBES, BUDGETS, AND DIETS. NO DEBATES.",
   },
   {
-    emoji: "🎤",
-    title: "Voice Preferences",
-    description:
-      "Don't like forms? Just talk to our AI assistant and it'll capture your perfect trip preferences.",
+    icon: "〰",
+    title: "VOICE INPUT",
+    description: "DON'T TYPE. JUST TALK. WE EXTRACT THE PREFERENCES.",
   },
   {
-    emoji: "📊",
-    title: "Smart Itineraries",
-    description:
-      "Get day-by-day plans with group time, solo adventures, and per-person budget breakdowns.",
+    icon: "⚄",
+    title: "SMART PLANS",
+    description: "DAY-BY-DAY ITINERARIES. SOLO TIME INCLUDED. BUDGETS BROKEN DOWN.",
   },
   {
-    emoji: "🤝",
-    title: "Group Sync",
-    description:
-      "Share a link, collect preferences in real-time, and see exactly when everyone's submitted.",
-  },
-  {
-    emoji: "🍽️",
-    title: "Dietary Aware",
-    description:
-      "Vegetarian? Gluten-free? Halal? Every restaurant suggestion respects everyone's needs.",
-  },
-  {
-    emoji: "💡",
-    title: "Explainable AI",
-    description:
-      "Every recommendation comes with a clear reason — no black-box magic here.",
-  },
-];
-
-const steps = [
-  {
-    number: "01",
-    title: "Create a Trip",
-    description: "Set your dates, group size, and share a link with your crew.",
-    color: "from-indigo-500 to-violet-500",
-  },
-  {
-    number: "02",
-    title: "Everyone Shares Preferences",
-    description:
-      "Each person fills in their vibes, budget, and dietary needs — or just talks to our AI.",
-    color: "from-violet-500 to-purple-500",
-  },
-  {
-    number: "03",
-    title: "AI Finds the Perfect Match",
-    description:
-      "Gemini analyzes all preferences and recommends destinations with scores and reasoning.",
-    color: "from-purple-500 to-cyan-500",
-  },
-  {
-    number: "04",
-    title: "Get Your Smart Itinerary",
-    description:
-      "A day-by-day plan maximizing group fun while giving everyone the solo time they need.",
-    color: "from-cyan-500 to-teal-500",
+    icon: "↗",
+    title: "GROUP SYNC",
+    description: "SHARE ONE LINK. SECURE EVERYONE'S INPUT IN REAL-TIME.",
   },
 ];
 
 export default function LandingPage() {
   const [user, setUser] = useState<User | null>(null);
+  const [activeFeature, setActiveFeature] = useState(0);
 
   useEffect(() => {
     const supabase = createClient();
     supabase.auth.getUser().then(({ data: { user } }) => setUser(user));
+
+    const interval = setInterval(() => {
+      setActiveFeature((prev) => (prev + 1) % features.length);
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const handleSignIn = async () => {
@@ -93,225 +53,107 @@ export default function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-24 pb-20 sm:pt-32 sm:pb-28">
-        {/* Background decoration */}
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 h-96 w-96 rounded-full bg-indigo-200/40 blur-3xl animate-float" />
-          <div className="absolute top-20 right-1/4 h-80 w-80 rounded-full bg-cyan-200/40 blur-3xl animate-float-delayed" />
-          <div className="absolute bottom-0 left-1/2 h-72 w-72 rounded-full bg-violet-200/30 blur-3xl animate-float-slow" />
+    <div className="h-[calc(100vh-64px)] mt-[64px] snap-y snap-mandatory overflow-y-auto overflow-x-hidden bg-background">
+      
+      {/* 1. HERO SECTION */}
+      <section className="h-[calc(100vh-64px)] w-full snap-start flex flex-col md:flex-row border-b-2 border-foreground">
+        
+        {/* Left: Massive Typography */}
+        <div className="flex-1 border-b-2 md:border-b-0 md:border-r-2 border-foreground flex items-center p-8 lg:p-16">
+          <h1 className="font-black uppercase text-[12vw] md:text-[8vw] leading-[0.85] tracking-tighter text-foreground break-words hyphen-auto">
+            TRIPS<br/>YOUR<br/>CREW<br/>WILL LOVE.
+          </h1>
         </div>
 
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            {/* Badge */}
-            <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-indigo-200 bg-indigo-50 px-4 py-1.5 text-sm font-medium text-indigo-700">
-              <span className="relative flex h-2 w-2">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-75" />
-                <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
+        {/* Right: CTA & Powered By */}
+        <div className="flex-1 flex flex-col">
+          {user ? (
+            <Link
+              href="/trip/new"
+              className="group flex-1 flex flex-col justify-center items-center bg-foreground text-background transition-colors hover:bg-background hover:text-foreground cursor-pointer border-b-2 border-foreground p-8"
+            >
+              <span className="font-black uppercase text-5xl md:text-7xl tracking-tighter text-center">
+                PLAN<br />TRIP ↗
               </span>
-              Powered by Gemini AI
-            </div>
+            </Link>
+          ) : (
+            <button
+              onClick={handleSignIn}
+              className="group flex-1 flex flex-col justify-center items-center bg-foreground text-background transition-colors hover:bg-background hover:text-foreground cursor-pointer border-b-2 border-foreground p-8 w-full"
+            >
+              <span className="font-black uppercase text-4xl lg:text-5xl xl:text-7xl tracking-tighter text-center">
+                GET STARTED<br />IT&apos;S FREE ↗
+              </span>
+            </button>
+          )}
 
-            {/* Headline */}
-            <h1 className="mx-auto max-w-4xl text-5xl font-extrabold tracking-tight text-foreground sm:text-7xl">
-              Plan trips your whole{" "}
-              <span className="gradient-text">crew will love</span>
-            </h1>
-
-            <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-muted sm:text-xl">
-              Stop the endless group chat debates. TripSync collects everyone&apos;s
-              preferences, synthesizes them with AI, and generates smart
-              itineraries that maximize fun for the whole group.
-            </p>
-
-            {/* CTA */}
-            <div className="mt-10 flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-              {user ? (
-                <Link
-                  href="/trip/new"
-                  className="group relative inline-flex items-center gap-2 rounded-full gradient-bg px-8 py-3.5 text-lg font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105 active:scale-95"
-                >
-                  Plan a Trip
-                  <svg
-                    className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </Link>
-              ) : (
-                <button
-                  onClick={handleSignIn}
-                  className="group relative inline-flex items-center gap-2 rounded-full gradient-bg px-8 py-3.5 text-lg font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:shadow-indigo-500/30 hover:scale-105 active:scale-95"
-                >
-                  Get Started — It&apos;s Free
-                  <svg
-                    className="h-5 w-5 transition-transform group-hover:translate-x-1"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7l5 5m0 0l-5 5m5-5H6"
-                    />
-                  </svg>
-                </button>
-              )}
-              <Link
-                href="#how-it-works"
-                className="inline-flex items-center gap-2 rounded-full border border-border px-6 py-3.5 text-lg font-medium text-foreground transition-all hover:border-primary-light hover:bg-indigo-50"
-              >
-                See How It Works
-              </Link>
-            </div>
-
-            {/* Social proof */}
-            <div className="mt-14 flex flex-wrap items-center justify-center gap-6 text-sm text-muted">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🏆</span> Built for HackCU 2026
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🤖</span> Gemini API
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <span className="text-lg">🗣️</span> ElevenLabs Voice
-              </div>
-              <div className="h-4 w-px bg-border" />
-              <div className="flex items-center gap-2">
-                <span className="text-lg">☁️</span> Vultr Cloud
-              </div>
+          <div className="h-1/3 min-h-[150px] bg-background flex flex-col justify-center p-8 gap-4 border-t-2 border-foreground group hover:bg-foreground hover:text-background transition-colors">
+            <p className="font-black tracking-widest text-xs uppercase opacity-50">POWERED BY</p>
+            <div className="flex flex-col gap-2 font-black uppercase tracking-tighter text-2xl md:text-3xl">
+              <span>✺ GEMINI AI</span>
+              <span>〰 ELEVENLABS</span>
+              <span>◩ VULTR CLOUD</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section id="how-it-works" className="py-20 sm:py-28">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              How It Works
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted">
-              From chaos to consensus in four easy steps
+      {/* 2. THE ARSENAL (Features Carousel) */}
+      <section className="h-[calc(100vh-64px)] w-full snap-start flex flex-col">
+        {/* Header */}
+        <div className="border-b-2 border-foreground p-6 md:p-12 shrink-0">
+          <h2 className="font-black uppercase text-4xl md:text-6xl tracking-tighter">
+            [ THE ARSENAL ]
+          </h2>
+        </div>
+
+        {/* Carousel Content */}
+        <div className="flex-1 flex flex-col md:flex-row relative overflow-hidden">
+          
+          {/* Active Feature Display */}
+          <div className="flex-1 flex flex-col justify-center p-8 md:p-16 lg:p-24 border-b-2 md:border-b-0 md:border-r-2 border-foreground bg-background">
+            <div className="text-[120px] md:text-[200px] leading-none text-foreground mb-8 animate-fade-in">
+              {features[activeFeature].icon}
+            </div>
+            <h3 className="font-black uppercase text-5xl md:text-7xl xl:text-8xl tracking-tighter leading-none mb-6 text-foreground break-words animate-fade-in">
+              {features[activeFeature].title}
+            </h3>
+            <p className="font-bold text-lg md:text-2xl uppercase tracking-widest max-w-2xl text-foreground/80 animate-fade-in">
+              {features[activeFeature].description}
             </p>
           </div>
 
-          <div className="mt-16 grid gap-8 sm:grid-cols-2 lg:grid-cols-4">
-            {steps.map((step) => (
+          {/* Indicators / Progress */}
+          <div className="w-full md:w-32 lg:w-48 xl:w-64 bg-foreground flex flex-row md:flex-col shrink-0">
+            {features.map((_, idx) => (
               <div
-                key={step.number}
-                className="group relative rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-lg hover:-translate-y-1"
+                key={idx}
+                className={`flex-1 border-r-2 md:border-r-0 md:border-b-2 border-background transition-colors cursor-pointer flex items-center justify-center
+                  ${activeFeature === idx ? "bg-background text-foreground" : "bg-foreground text-background"}`}
+                onClick={() => setActiveFeature(idx)}
               >
-                <div
-                  className={`inline-flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br ${step.color} text-white text-lg font-bold shadow-md`}
-                >
-                  {step.number}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  {step.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  {step.description}
-                </p>
+                <span className="font-black text-2xl md:text-4xl tracking-tighter">
+                  0{idx + 1}
+                </span>
               </div>
             ))}
           </div>
+
         </div>
       </section>
-
-      {/* Features Grid */}
-      <section className="py-20 sm:py-28 bg-gradient-to-b from-transparent to-indigo-50/50">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
-              Everything your group needs
-            </h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted">
-              Smart features that make group trip planning actually enjoyable
-            </p>
-          </div>
-
-          <div className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {features.map((feature) => (
-              <div
-                key={feature.title}
-                className="group rounded-2xl border border-border bg-card p-6 transition-all hover:shadow-lg hover:border-primary-light hover:-translate-y-1"
-              >
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-indigo-50 text-2xl transition-transform group-hover:scale-110">
-                  {feature.emoji}
-                </div>
-                <h3 className="mt-4 text-lg font-semibold text-foreground">
-                  {feature.title}
-                </h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  {feature.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 sm:py-28">
-        <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-          <div className="gradient-bg-animated rounded-3xl p-10 text-center text-white sm:p-16 shadow-2xl">
-            <h2 className="text-3xl font-bold sm:text-4xl">
-              Ready to sync your next trip?
-            </h2>
-            <p className="mx-auto mt-4 max-w-lg text-lg text-white/80">
-              Stop the group chat madness. Let AI handle the planning so you can
-              focus on having fun.
-            </p>
-            {user ? (
-              <Link
-                href="/trip/new"
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-lg font-semibold text-indigo-600 shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95"
-              >
-                Plan a Trip Now ✈️
-              </Link>
-            ) : (
-              <button
-                onClick={handleSignIn}
-                className="mt-8 inline-flex items-center gap-2 rounded-full bg-white px-8 py-3.5 text-lg font-semibold text-indigo-600 shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95"
-              >
-                Get Started Free ✈️
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="border-t border-border py-8">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <div className="flex items-center gap-2">
-              <span className="text-xl">✈️</span>
-              <span className="font-bold gradient-text">TripSync</span>
-            </div>
-            <p className="text-sm text-muted">
-              Built with ❤️ at HackCU 2026 — Powered by Gemini AI, ElevenLabs &
-              Vultr
-            </p>
-          </div>
+      
+      {/* 3. FOOTER */}
+      <footer className="h-[calc(40vh)] snap-start border-t-2 border-foreground bg-foreground text-background flex flex-col items-center justify-center p-8">
+        <h2 className="font-black uppercase text-[8vw] leading-none tracking-tighter text-center mb-8">
+          TRIPSYNC
+        </h2>
+        <div className="flex flex-col md:flex-row gap-8 font-black uppercase tracking-widest text-sm text-center">
+          <span>BUILT FOR HACKCU 2026</span>
+          <span className="hidden md:inline">|</span>
+          <span>NO MORE ENDLESS GROUP CHATS</span>
         </div>
       </footer>
+
     </div>
   );
 }

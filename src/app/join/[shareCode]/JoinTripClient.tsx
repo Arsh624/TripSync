@@ -91,97 +91,78 @@ export default function JoinTripClient({
     };
 
     return (
-        <div className="min-h-screen pt-24 pb-16 page-transition">
+        <div className="min-h-screen pt-24 pb-16">
             <div className="mx-auto max-w-lg px-4">
-                <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-lg">
+                <div className="border-4 border-foreground bg-background p-8 text-center">
                     {/* Trip invite header */}
-                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl gradient-bg-animated text-4xl text-white shadow-lg">
-                        ✈️
+                    <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center border-4 border-foreground bg-foreground text-4xl text-background">
+                        ⚑
                     </div>
 
-                    <p className="text-sm font-medium text-muted uppercase tracking-wider">
-                        You&apos;re invited to
+                    <p className="text-sm font-bold text-foreground/70 uppercase tracking-widest">
+                        YOU'RE INVITED TO
                     </p>
-                    <h1 className="mt-2 text-3xl font-bold text-foreground">
+                    <h1 className="mt-2 text-4xl md:text-5xl font-black uppercase tracking-tighter text-foreground leading-none">
                         {trip.name}
                     </h1>
 
                     {/* Trip details */}
-                    <div className="mt-6 flex flex-wrap justify-center gap-3">
+                    <div className="mt-8 flex flex-wrap justify-center gap-3">
                         {trip.trip_duration_days && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 border border-indigo-200 px-3 py-1.5 text-sm font-medium text-indigo-700">
-                                📅 {trip.trip_duration_days} days
+                            <span className="inline-flex items-center gap-2 border-2 border-foreground bg-foreground px-3 py-1 text-sm font-bold uppercase tracking-widest text-background">
+                                ◷ {trip.trip_duration_days} DAYS
                             </span>
                         )}
                         {trip.group_size && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-cyan-50 border border-cyan-200 px-3 py-1.5 text-sm font-medium text-cyan-700">
-                                👥 {trip.group_size} travelers
+                            <span className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-3 py-1 text-sm font-bold uppercase tracking-widest text-foreground">
+                                ⚑ {trip.group_size} TRAVELERS
                             </span>
                         )}
                         {trip.destination && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1.5 text-sm font-medium text-emerald-700">
-                                📍 {trip.destination}
+                            <span className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-3 py-1 text-sm font-bold uppercase tracking-widest text-foreground">
+                                ✹ {trip.destination}
                             </span>
                         )}
                         {trip.start_date && (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-200 px-3 py-1.5 text-sm font-medium text-amber-700">
-                                🗓️ {new Date(trip.start_date).toLocaleDateString()}
+                            <span className="inline-flex items-center gap-2 border-2 border-foreground bg-background px-3 py-1 text-sm font-bold uppercase tracking-widest text-foreground">
+                                🗓 {new Date(trip.start_date).toLocaleDateString()}
                             </span>
                         )}
                     </div>
 
                     {/* Error */}
                     {error && (
-                        <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                            {error}
+                        <div className="mt-8 border-4 border-foreground bg-foreground px-4 py-3 text-sm font-bold uppercase tracking-widest text-background">
+                            ERROR: {error}
                         </div>
                     )}
 
                     {/* Action */}
-                    <div className="mt-8">
+                    <div className="mt-10">
                         {user ? (
                             <button
                                 onClick={handleJoin}
                                 disabled={loading}
-                                className="w-full rounded-xl gradient-bg py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                className="w-full border-4 border-foreground bg-foreground py-5 text-xl font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
                             >
                                 {loading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <svg
-                                            className="h-5 w-5 animate-spin"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            />
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                            />
-                                        </svg>
-                                        Joining...
+                                    <span className="animate-pulse">
+                                        JOINING...
                                     </span>
                                 ) : (
-                                    "Join This Trip 🎉"
+                                    "JOIN THIS TRIP ↗"
                                 )}
                             </button>
                         ) : (
-                            <div>
-                                <p className="mb-4 text-sm text-muted">
-                                    Sign in to join this trip and share your preferences
+                            <div className="border-t-4 border-foreground pt-8 mt-4">
+                                <p className="mb-6 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                                    SIGN IN TO JOIN AND SHARE PREFERENCES
                                 </p>
                                 <button
                                     onClick={handleSignIn}
-                                    className="w-full rounded-xl gradient-bg py-4 text-lg font-semibold text-white shadow-lg shadow-indigo-500/25 transition-all hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                                    className="w-full border-4 border-foreground bg-foreground py-5 text-xl font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground"
                                 >
-                                    Sign in with Google to Join
+                                    SIGN IN WITH GOOGLE ↗
                                 </button>
                             </div>
                         )}

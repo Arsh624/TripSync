@@ -2,10 +2,9 @@
 
 import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
+import DayMap from "@/components/DayMap";
 
 const NarrationPlayer = lazy(() => import("@/components/NarrationPlayer"));
-const DayMap = dynamic(() => import("@/components/DayMap"), { ssr: false });
 
 interface Activity {
     time: string;
@@ -86,20 +85,20 @@ interface ItineraryViewProps {
     currentUserName?: string;
 }
 
-const typeColors: Record<string, { bg: string; border: string; text: string; label: string }> = {
-    group: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", label: "👥 Group" },
-    solo: { bg: "bg-violet-50", border: "border-violet-200", text: "text-violet-700", label: "🧍 Solo" },
-    subgroup: { bg: "bg-teal-50", border: "border-teal-200", text: "text-teal-700", label: "👫 Subgroup" },
+const typeLabels: Record<string, string> = {
+    group: "GROUP",
+    solo: "SOLO",
+    subgroup: "SUBGROUP",
 };
 
-const categoryIcons: Record<string, string> = {
-    food: "🍽️",
-    activity: "🎯",
-    transportation: "🚗",
-    free: "🌟",
+const categorySymbols: Record<string, string> = {
+    food: "〰",
+    activity: "✹",
+    transportation: "↑",
+    free: "□",
 };
 
-export default function ItineraryView({
+    export default function ItineraryView({
     trip,
     itinerary,
     destination,
@@ -110,7 +109,7 @@ export default function ItineraryView({
     const [activeDay, setActiveDay] = useState(-3); // Start on overview
     const [showNarration, setShowNarration] = useState(false);
     const [viewMode, setViewMode] = useState<"group" | "my">("group");
-    const [hoveredStop, setHoveredStop] = useState<number | null>(null);
+    const [highlightedActivityIndex, setHighlightedActivityIndex] = useState<number | null>(null);
 
     // Filter activities for "My Schedule" mode
     const isMyActivity = (activity: Activity) => {
@@ -135,156 +134,174 @@ export default function ItineraryView({
             : [];
 
     return (
-        <div className="min-h-screen pb-16 page-transition">
-            {/* Sticky header — below navbar */}
-            <div className="sticky top-16 z-30 border-b border-border bg-card/95 backdrop-blur-md">
-                <div className="mx-auto max-w-4xl px-4 py-3 sm:px-6">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <h1 className="text-lg font-bold text-foreground">{trip.name}</h1>
-                            <p className="text-xs text-muted">
-                                📍 {destination} · {trip.trip_duration_days || days.length} days
+        <div className="min-h-screen pb-16">
+            {/* Sticky header */}
+            <div className="sticky top-16 z-30 border-b-4 border-foreground bg-background">
+                <div className="mx-auto max-w-4xl px-4 py-4 sm:px-6">
+                    <div className="flex items-center justify-between gap-3">
+                        <div className="min-w-0">
+                            <h1 className="text-xl font-black uppercase tracking-tighter text-foreground truncate">{trip.name}</h1>
+                            <p className="text-xs font-bold uppercase tracking-widest text-foreground/60 mt-0.5 truncate">
+                                ⌖ {destination} · {trip.trip_duration_days || days.length} DAYS
                             </p>
                         </div>
-                        <Link
-                            href={`/trip/${trip.id}/status`}
-                            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card-hover transition-all"
-                        >
-                            ← Back
-                        </Link>
-                        <button
-                            onClick={() => setShowNarration(true)}
-                            className="rounded-lg gradient-bg px-3 py-1.5 text-xs font-medium text-white hover:shadow-md transition-all"
-                        >
-                            🔊 Listen
-                        </button>
+                        <div className="flex items-center gap-2 shrink-0">
+                            <Link
+                                href={`/trip/${trip.id}/status`}
+                                className="border-2 border-foreground bg-background px-3 py-1.5 text-xs font-black uppercase tracking-widest text-foreground transition-colors hover:bg-foreground hover:text-background"
+                            >
+                                ← BACK
+                            </Link>
+                            <button
+                                onClick={() => setShowNarration(true)}
+                                className="border-2 border-foreground bg-foreground px-3 py-1.5 text-xs font-black uppercase tracking-widest text-background transition-colors hover:bg-background hover:text-foreground"
+                            >
+                                ♪ LISTEN
+                            </button>
+                        </div>
                     </div>
 
                     {/* Group / My Schedule toggle */}
                     {currentUserName && (
-                        <div className="mt-2 flex items-center gap-1">
-                            <div className="inline-flex rounded-lg border border-border p-0.5 bg-card-hover">
+                        <div className="mt-3 flex items-center gap-2">
+                            <div className="inline-flex border-2 border-foreground overflow-hidden">
                                 <button
                                     onClick={() => setViewMode("group")}
-                                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                                    className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-colors ${
                                         viewMode === "group"
-                                            ? "gradient-bg text-white shadow-sm"
-                                            : "text-muted hover:text-foreground"
+                                            ? "bg-foreground text-background"
+                                            : "bg-background text-foreground hover:bg-foreground/10"
                                     }`}
                                 >
-                                    👥 Group View
+                                    ■ GROUP VIEW
                                 </button>
                                 <button
                                     onClick={() => setViewMode("my")}
-                                    className={`rounded-md px-3 py-1 text-xs font-medium transition-all ${
+                                    className={`px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-colors ${
                                         viewMode === "my"
-                                            ? "bg-violet-500 text-white shadow-sm"
-                                            : "text-muted hover:text-foreground"
+                                            ? "bg-foreground text-background"
+                                            : "bg-background text-foreground hover:bg-foreground/10"
                                     }`}
                                 >
-                                    🧍 My Schedule
+                                    ○ MY SCHEDULE
                                 </button>
                             </div>
                             <Link
                                 href={`/trip/${trip.id}/budget`}
-                                className="ml-auto rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card-hover transition-all"
+                                className="ml-auto border-2 border-foreground bg-background px-3 py-1.5 text-xs font-black uppercase tracking-widest text-foreground transition-colors hover:bg-foreground hover:text-background"
                             >
-                                💰 My Budget
+                                ✹ MY BUDGET
                             </Link>
                         </div>
                     )}
 
                     {/* Day tabs */}
-                    <div className="mt-2 flex gap-1 overflow-x-auto pb-1 -mx-1 px-1">
+                    <div className="mt-3 flex gap-0 overflow-x-auto pb-1 -mx-1 px-1">
                         <button
                             onClick={() => setActiveDay(-3)}
-                            className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${activeDay === -3 ? "gradient-bg text-white shadow-sm" : "text-muted hover:bg-card-hover"}`}
+                            className={`shrink-0 border-2 border-foreground px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-colors -mr-0.5 ${
+                                activeDay === -3 ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-foreground/10"
+                            }`}
                         >
-                            📋 Overview
+                            OVERVIEW
                         </button>
                         {days.map((day, i) => (
                             <button
                                 key={i}
                                 onClick={() => setActiveDay(i)}
-                                className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${activeDay === i ? "gradient-bg text-white shadow-sm" : "text-muted hover:bg-card-hover"}`}
+                                className={`shrink-0 border-2 border-foreground px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-colors -mr-0.5 ${
+                                    activeDay === i ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-foreground/10"
+                                }`}
                             >
-                                Day {day.day_number}
+                                DAY {day.day_number}
                             </button>
                         ))}
                         {budgetSummary && (
                             <button
                                 onClick={() => setActiveDay(-2)}
-                                className={`shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${activeDay === -2 ? "gradient-bg text-white shadow-sm" : "text-muted hover:bg-card-hover"}`}
+                                className={`shrink-0 border-2 border-foreground px-4 py-1.5 text-xs font-black uppercase tracking-widest transition-colors -mr-0.5 ${
+                                    activeDay === -2 ? "bg-foreground text-background" : "bg-background text-foreground hover:bg-foreground/10"
+                                }`}
                             >
-                                💰 Budget
+                                BUDGET
                             </button>
                         )}
                     </div>
                 </div>
             </div>
 
-            <div className="mx-auto max-w-4xl px-4 pt-6 sm:px-6">
-                {/* Overview tab — Transportation + Accommodation */}
+            <div className="mx-auto max-w-4xl px-4 pt-16 sm:px-6">
+                {/* Overview tab */}
                 {activeDay === -3 && (
-                    <div className="animate-fade-in space-y-6">
-                        <h2 className="text-2xl font-bold text-foreground">Trip Overview</h2>
+                    <div className="animate-fade-in space-y-8">
+                        <h2 className="text-4xl font-black uppercase tracking-tighter text-foreground border-b-4 border-foreground pb-4">TRIP OVERVIEW</h2>
 
                         {/* Transportation */}
                         {transportation && (
-                            <div className="rounded-2xl border border-border bg-card p-6">
-                                <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-                                    {transportation.type === "flight" ? "✈️" : transportation.type === "drive" ? "🚗" : "🚗✈️"} Getting There
+                            <div className="border-4 border-foreground bg-background p-6">
+                                <h3 className="text-2xl font-black uppercase tracking-tighter text-foreground">
+                                    ↑ GETTING THERE
                                 </h3>
-                                <div className="mt-3 flex gap-3">
-                                    <span className="rounded-full bg-indigo-50 border border-indigo-200 px-3 py-1 text-xs font-medium text-indigo-700 capitalize">
-                                        {transportation.type}
+                                <div className="mt-4 flex flex-wrap gap-3">
+                                    <span className="border-2 border-foreground bg-foreground px-4 py-1.5 text-xs font-black uppercase tracking-widest text-background">
+                                        {transportation.type.toUpperCase()}
                                     </span>
-                                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-xs font-medium text-emerald-700">
-                                        ~${transportation.estimated_cost_pp}/person
+                                    <span className="border-2 border-foreground bg-background px-4 py-1.5 text-xs font-black uppercase tracking-widest text-foreground">
+                                        ~${transportation.estimated_cost_pp}/PERSON
                                     </span>
                                 </div>
-                                <p className="mt-3 text-sm text-foreground/70">{transportation.notes}</p>
+                                <p className="mt-4 text-sm font-bold uppercase tracking-widest text-foreground/80 border-l-4 border-foreground pl-4">{transportation.notes}</p>
                             </div>
                         )}
 
                         {/* Accommodation Options */}
                         {accommodationOptions.length > 0 && (
                             <div>
-                                <h3 className="text-lg font-semibold text-foreground mb-3">🏨 Where to Stay</h3>
-                                <div className="space-y-3">
+                                <h3 className="text-2xl font-black uppercase tracking-tighter text-foreground border-b-4 border-foreground pb-4 mb-6">□ WHERE TO STAY</h3>
+                                <div className="space-y-4">
                                     {accommodationOptions.map((option, i) => (
                                         <div
                                             key={i}
-                                            className={`rounded-xl border p-4 transition-all ${accommodation?.recommended === option.name
-                                                ? "border-emerald-300 bg-emerald-50/50 ring-1 ring-emerald-200"
-                                                : "border-border bg-card"
-                                                }`}
+                                            className={`border-4 p-5 ${
+                                                accommodation?.recommended === option.name
+                                                    ? "border-foreground bg-foreground"
+                                                    : "border-foreground bg-background"
+                                            }`}
                                         >
-                                            <div className="flex items-start justify-between">
+                                            <div className="flex items-start justify-between gap-4">
                                                 <div>
-                                                    <div className="flex items-center gap-2">
-                                                        <h4 className="font-semibold text-foreground">{option.name}</h4>
+                                                    <div className="flex flex-wrap items-center gap-3">
+                                                        <h4 className={`font-black text-xl uppercase tracking-tighter ${
+                                                            accommodation?.recommended === option.name ? "text-background" : "text-foreground"
+                                                        }`}>{option.name}</h4>
                                                         {accommodation?.recommended === option.name && (
-                                                            <span className="rounded-full bg-emerald-100 border border-emerald-300 px-2 py-0.5 text-[10px] font-medium text-emerald-700">
-                                                                ⭐ Top Pick
+                                                            <span className="border-2 border-background px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-background">
+                                                                ✹ TOP PICK
                                                             </span>
                                                         )}
                                                         {option.confidence && (
-                                                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${option.confidence === "verified"
-                                                                ? "bg-blue-50 border border-blue-200 text-blue-700"
-                                                                : "bg-amber-50 border border-amber-200 text-amber-700"
-                                                                }`}>
-                                                                {option.confidence === "verified" ? "✓ Verified" : "💡 Suggested"}
+                                                            <span className={`border-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
+                                                                accommodation?.recommended === option.name
+                                                                    ? "border-background text-background"
+                                                                    : "border-foreground text-foreground"
+                                                            }`}>
+                                                                {option.confidence === "verified" ? "✓ VERIFIED" : "~ SUGGESTED"}
                                                             </span>
                                                         )}
                                                     </div>
-                                                    <span className="text-xs text-muted capitalize">{option.type}</span>
+                                                    <span className={`text-xs font-bold uppercase tracking-widest mt-1 block ${
+                                                        accommodation?.recommended === option.name ? "text-background/70" : "text-foreground/60"
+                                                    }`}>{option.type.toUpperCase()}</span>
                                                 </div>
-                                                <span className="shrink-0 text-base font-bold gradient-text">
-                                                    ${option.cost_per_night}/night
+                                                <span className={`shrink-0 text-2xl font-black uppercase tracking-tighter ${
+                                                    accommodation?.recommended === option.name ? "text-background" : "text-foreground"
+                                                }`}>
+                                                    ${option.cost_per_night}/NIGHT
                                                 </span>
                                             </div>
-                                            <p className="mt-2 text-sm text-foreground/70">{option.reasoning}</p>
+                                            <p className={`mt-4 text-sm font-bold uppercase tracking-widest ${
+                                                accommodation?.recommended === option.name ? "text-background/80" : "text-foreground/70"
+                                            }`}>{option.reasoning}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -294,184 +311,89 @@ export default function ItineraryView({
                 )}
 
                 {/* Day view */}
-                {activeDay >= 0 && days[activeDay] && (() => {
-                    const dayActivities = days[activeDay].activities.filter(isMyActivity);
-                    const mapStops = dayActivities
-                        .map((a, i) => (a.lat != null && a.lng != null ? {
-                            index: i,
-                            name: a.name,
-                            time: a.time,
-                            description: a.description,
-                            lat: a.lat,
-                            lng: a.lng,
-                            mapQuery: a.mapQuery,
-                            place: a.place,
-                            category: a.category,
-                        } : null))
-                        .filter(Boolean) as { index: number; name: string; time: string; description: string; lat: number; lng: number; mapQuery?: string; place?: string; category: string }[];
-
-                    // Build Google Maps multi-stop directions URL
-                    const stopsWithPlace = dayActivities.filter((a) => a.place);
-                    const fullRouteUrl = stopsWithPlace.length >= 2
-                        ? `https://www.google.com/maps/dir/${stopsWithPlace.map((a) => encodeURIComponent(a.place!)).join("/")}`
-                        : null;
-
-                    const MARKER_COLORS = [
-                        "#6366f1", "#ec4899", "#f59e0b", "#10b981", "#06b6d4",
-                        "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#3b82f6",
-                    ];
-
-                    return (
+                {activeDay >= 0 && days[activeDay] && (
                     <div className="animate-fade-in">
-                        <div className="mb-6">
-                            <h2 className="text-2xl font-bold text-foreground">
-                                Day {days[activeDay].day_number}: {days[activeDay].theme}
+                        <div className="mb-8 border-b-4 border-foreground pb-4">
+                            <h2 className="text-4xl font-black uppercase tracking-tighter text-foreground">
+                                DAY {days[activeDay].day_number}: {days[activeDay].theme.toUpperCase()}
                             </h2>
-                            <p className="text-sm text-muted mt-1">{days[activeDay].date}</p>
+                            <p className="text-xs font-bold uppercase tracking-widest text-foreground/60 mt-2">{days[activeDay].date}</p>
                         </div>
 
-                        {/* Leaflet Map */}
-                        {mapStops.length > 0 && (
-                            <div className="mb-6 space-y-3">
-                                <DayMap stops={mapStops} highlightedIndex={hoveredStop} />
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                            {/* Timeline */}
+                            <div className="relative">
+                            <div className="absolute left-6 top-0 bottom-0 w-1 bg-foreground" />
 
-                                {/* Legend chips */}
-                                <div className="flex flex-wrap gap-2">
-                                    {mapStops.map((stop, i) => (
-                                        <span
-                                            key={i}
-                                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-2.5 py-1 text-xs font-medium text-foreground shadow-sm"
-                                        >
-                                            <span
-                                                style={{
-                                                    width: 18,
-                                                    height: 18,
-                                                    borderRadius: "50%",
-                                                    background: MARKER_COLORS[i % MARKER_COLORS.length],
-                                                    color: "white",
-                                                    display: "inline-flex",
-                                                    alignItems: "center",
-                                                    justifyContent: "center",
-                                                    fontSize: 10,
-                                                    fontWeight: 700,
-                                                    flexShrink: 0,
-                                                }}
-                                            >
-                                                {i + 1}
-                                            </span>
-                                            {stop.name}
-                                        </span>
-                                    ))}
-                                </div>
-
-                                {/* Open Full Route button */}
-                                {fullRouteUrl && (
-                                    <a
-                                        href={fullRouteUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-card-hover transition-all shadow-sm"
-                                    >
-                                        🗺️ Open Full Route in Google Maps
-                                    </a>
-                                )}
-                            </div>
-                        )}
-
-                        {/* Timeline */}
-                        <div className="relative">
-                            <div className="absolute left-5 top-0 bottom-0 w-px bg-border" />
-
-                            <div className="space-y-4">
+                            <div className="space-y-5">
                                 {days[activeDay].activities.filter(isMyActivity).map((activity, i) => {
-                                    // In "My Schedule" mode, use violet accent for personal activities
-                                    const isPersonalActivity =
-                                        viewMode === "my" &&
-                                        (activity.type === "solo" || activity.type === "subgroup");
-                                    const typeStyle = isPersonalActivity
-                                        ? {
-                                              bg: "bg-violet-50 dark:bg-violet-950/30",
-                                              border: "border-violet-300 dark:border-violet-500/40",
-                                              text: "text-violet-700 dark:text-violet-300",
-                                              label: activity.type === "solo" ? "🧍 Just You" : "👫 Subgroup",
-                                          }
-                                        : typeColors[activity.type] || typeColors.group;
+                                    const isSolo = activity.type === "solo" || activity.type === "subgroup";
+                                    const isPersonalActivity = viewMode === "my" && isSolo;
+                                    const typeLabel = typeLabels[activity.type] || "GROUP";
+                                    const catSymbol = categorySymbols[activity.category] || "□";
                                     const reasoningKey = `${activeDay}-${i}`;
                                     const isExpanded = expandedReasoning === reasoningKey;
 
                                     return (
-                                        <div
-                                            key={i}
-                                            className="relative flex gap-4"
-                                            onMouseEnter={() => setHoveredStop(i)}
-                                            onMouseLeave={() => setHoveredStop(null)}
+                                        <div 
+                                            key={i} 
+                                            className="relative flex gap-5"
+                                            onMouseEnter={() => setHighlightedActivityIndex(i)}
+                                            onMouseLeave={() => setHighlightedActivityIndex(null)}
                                         >
-                                            {/* Timeline dot */}
-                                            <div
-                                                className={`relative z-10 mt-1 flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-lg ${typeStyle.bg} ${typeStyle.border} border`}
-                                            >
-                                                {categoryIcons[activity.category] || "📌"}
+                                            {/* Timeline node */}
+                                            <div className={`relative z-10 mt-1 flex h-12 w-12 shrink-0 items-center justify-center border-4 border-foreground text-xl font-black ${
+                                                isPersonalActivity ? "bg-foreground text-background" : "bg-background text-foreground"
+                                            }`}>
+                                                {catSymbol}
                                             </div>
 
                                             {/* Card */}
-                                            <div
-                                                className={`flex-1 rounded-xl border ${typeStyle.border} ${typeStyle.bg} p-4 transition-all hover:shadow-sm`}
-                                            >
+                                            <div className="flex-1 border-4 border-foreground bg-background p-4">
                                                 <div className="flex items-start justify-between gap-2">
                                                     <div className="flex-1 min-w-0">
-                                                        <div className="flex flex-wrap items-center gap-2">
-                                                            <span className="text-xs font-medium text-muted">
+                                                        <div className="flex flex-wrap items-center gap-2 mb-2">
+                                                            <span className="text-xs font-black uppercase tracking-widest text-foreground/60">
                                                                 {activity.time}
                                                             </span>
-                                                            <span
-                                                                className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${typeStyle.text} ${typeStyle.bg} border ${typeStyle.border}`}
-                                                            >
-                                                                {typeStyle.label}
+                                                            <span className="border-2 border-foreground px-2 py-0.5 text-[10px] font-black uppercase tracking-widest text-foreground">
+                                                                {typeLabel}
                                                             </span>
                                                             {activity.confidence && (
-                                                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${activity.confidence === "verified"
-                                                                    ? "bg-blue-50/80 border border-blue-200 text-blue-600"
-                                                                    : "bg-amber-50/80 border border-amber-200 text-amber-600"
-                                                                    }`}>
-                                                                    {activity.confidence === "verified" ? "✓" : "💡"}
+                                                                <span className={`border-2 px-2 py-0.5 text-[10px] font-black uppercase tracking-widest ${
+                                                                    activity.confidence === "verified"
+                                                                        ? "border-foreground bg-foreground text-background"
+                                                                        : "border-foreground/40 text-foreground/60"
+                                                                }`}>
+                                                                    {activity.confidence === "verified" ? "✓ VERIFIED" : "~ SUGGESTED"}
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <h3 className="mt-1 font-semibold text-foreground">
+                                                        <h3 className="font-black text-lg uppercase tracking-tighter text-foreground">
                                                             {activity.name}
                                                         </h3>
-                                                        <p className="mt-0.5 text-sm text-foreground/70">
+                                                        <p className="mt-1 text-sm font-bold uppercase tracking-widest text-foreground/70">
                                                             {activity.description}
                                                         </p>
                                                         {activity.dietary_notes && (
-                                                            <p className="mt-1 text-xs text-emerald-600">
-                                                                🥗 {activity.dietary_notes}
+                                                            <p className="mt-2 text-xs font-bold uppercase tracking-widest text-foreground/60 border-l-4 border-foreground pl-3">
+                                                                {activity.dietary_notes}
                                                             </p>
-                                                        )}
-                                                        {activity.mapQuery && (
-                                                            <a
-                                                                href={`https://www.google.com/maps/search/?api=1&query=${activity.mapQuery}`}
-                                                                target="_blank"
-                                                                rel="noopener noreferrer"
-                                                                className="mt-1 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-                                                            >
-                                                                📍 View on Maps
-                                                            </a>
                                                         )}
                                                     </div>
                                                     {activity.estimated_cost_pp > 0 && (
-                                                        <span className="shrink-0 rounded-lg bg-white/80 border border-border px-2 py-1 text-xs font-medium text-foreground">
-                                                            ${activity.estimated_cost_pp}/pp
+                                                        <span className="shrink-0 border-2 border-foreground bg-foreground px-3 py-1 text-xs font-black uppercase tracking-widest text-background">
+                                                            ${activity.estimated_cost_pp}/PP
                                                         </span>
                                                     )}
                                                 </div>
 
                                                 {/* Participants */}
-                                                <div className="mt-3 flex flex-wrap gap-1.5">
+                                                <div className="mt-3 flex flex-wrap gap-2">
                                                     {activity.participants.map((p, j) => (
                                                         <span
                                                             key={j}
-                                                            className="rounded-full bg-white/80 border border-border px-2 py-0.5 text-[11px] font-medium text-foreground"
+                                                            className="border-2 border-foreground px-2 py-0.5 text-[11px] font-black uppercase tracking-widest text-foreground"
                                                         >
                                                             {p}
                                                         </span>
@@ -484,13 +406,13 @@ export default function ItineraryView({
                                                         onClick={() =>
                                                             setExpandedReasoning(isExpanded ? null : reasoningKey)
                                                         }
-                                                        className="mt-2 flex items-center gap-1 text-[11px] font-medium text-primary hover:underline"
+                                                        className="mt-3 flex items-center gap-1 text-[11px] font-black uppercase tracking-widest text-foreground/60 hover:text-foreground transition-colors"
                                                     >
-                                                        💡 {isExpanded ? "Hide reasoning" : "Why this?"}
+                                                        ↔ {isExpanded ? "HIDE REASONING" : "WHY THIS?"}
                                                     </button>
                                                 )}
                                                 {isExpanded && activity.reasoning && (
-                                                    <p className="mt-2 rounded-lg bg-white/60 border border-border p-3 text-xs text-foreground/70 animate-fade-in">
+                                                    <p className="mt-2 border-4 border-foreground bg-foreground/10 p-3 text-xs font-bold uppercase tracking-widest text-foreground/80 animate-fade-in">
                                                         {activity.reasoning}
                                                     </p>
                                                 )}
@@ -501,26 +423,44 @@ export default function ItineraryView({
                             </div>
                         </div>
 
-                        {/* Empty state for My Schedule */}
+                            {/* Map */}
+                            <div className="sticky top-40 hidden lg:block">
+                                <DayMap 
+                                    stops={days[activeDay].activities.filter(isMyActivity).map((act, index) => ({
+                                        index,
+                                        name: act.name,
+                                        time: act.time,
+                                        description: act.description,
+                                        lat: act.lat || 0,
+                                        lng: act.lng || 0,
+                                        mapQuery: act.mapQuery,
+                                        place: act.place,
+                                        category: act.category
+                                    })).filter(stop => stop.lat !== 0 && stop.lng !== 0)} 
+                                    highlightedIndex={highlightedActivityIndex} 
+                                />
+                            </div>
+                        </div>
+
+                        {/* Empty state */}
                         {viewMode === "my" &&
                             days[activeDay].activities.filter(isMyActivity).length === 0 && (
-                                <div className="text-center py-12 text-muted">
-                                    <p className="text-3xl mb-2">🏖️</p>
-                                    <p className="text-sm">No scheduled activities for you this day — free time!</p>
+                                <div className="text-center py-16 border-4 border-foreground">
+                                    <p className="text-6xl font-black uppercase tracking-tighter text-foreground mb-4">□</p>
+                                    <p className="text-sm font-bold uppercase tracking-widest text-foreground/70">FREE TIME — NO SCHEDULED ACTIVITIES FOR YOU THIS DAY</p>
                                 </div>
                             )}
                     </div>
-                    );
-                })()}
+                )}
 
                 {/* Budget view */}
                 {activeDay === -2 && budgetSummary && (
                     <div className="animate-fade-in">
-                        <h2 className="text-2xl font-bold text-foreground mb-2">
-                            💰 Budget Breakdown
+                        <h2 className="text-4xl font-black uppercase tracking-tighter text-foreground border-b-4 border-foreground pb-4 mb-2">
+                            BUDGET BREAKDOWN
                         </h2>
-                        <p className="text-sm text-muted mb-6">
-                            Group total: <span className="font-semibold text-foreground">${budgetSummary.group_total?.toLocaleString()}</span>
+                        <p className="text-sm font-bold uppercase tracking-widest text-foreground/70 mb-8">
+                            GROUP TOTAL: <span className="text-foreground">${budgetSummary.group_total?.toLocaleString()}</span>
                         </p>
 
                         {/* Budget warning banner */}
@@ -530,15 +470,15 @@ export default function ItineraryView({
                             );
                             if (overBudgetMembers.length === 0) return null;
                             return (
-                                <div className="mb-6 rounded-xl border-2 border-amber-300 bg-amber-50 px-4 py-3">
-                                    <p className="text-sm font-semibold text-amber-900">
-                                        ⚠️ Heads up — this plan may exceed some budgets
+                                <div className="mb-8 border-4 border-foreground bg-foreground px-5 py-4">
+                                    <p className="text-sm font-black uppercase tracking-tighter text-background">
+                                        ! HEADS UP — THIS PLAN MAY EXCEED SOME BUDGETS
                                     </p>
-                                    <div className="mt-2 space-y-1">
+                                    <div className="mt-3 space-y-2">
                                         {overBudgetMembers.map(([name, b]) => {
                                             const overBy = b.total - memberBudgets[name];
                                             return (
-                                                <p key={name} className="text-xs text-amber-800">
+                                                <p key={name} className="text-xs font-bold uppercase tracking-widest text-background/80">
                                                     {name}'s estimate (${b.total.toLocaleString()}) is ${overBy.toLocaleString()} over their ${memberBudgets[name].toLocaleString()} budget
                                                 </p>
                                             );
@@ -548,77 +488,80 @@ export default function ItineraryView({
                             );
                         })()}
 
-                        <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="grid gap-5 sm:grid-cols-2">
                             {Object.entries(budgetSummary.per_person || {}).map(
                                 ([name, budget]) => {
                                     const stated = memberBudgets[name];
-                                    let budgetColor = "border-border";
-                                    let barColor = "gradient-bg";
+                                    let isOver = false;
+                                    let isClose = false;
+                                    let isUnder = false;
                                     let statusLabel = "";
-                                    let statusClass = "";
 
                                     if (stated != null) {
                                         const ratio = budget.total / stated;
-                                        if (ratio > 1) {
-                                            budgetColor = "border-red-300 ring-1 ring-red-200";
-                                            barColor = "bg-red-500";
-                                            statusLabel = `$${(budget.total - stated).toLocaleString()} over budget`;
-                                            statusClass = "text-red-600";
-                                        } else if (ratio > 0.9) {
-                                            budgetColor = "border-amber-300 ring-1 ring-amber-200";
-                                            barColor = "bg-amber-500";
-                                            statusLabel = "Within 10% of budget";
-                                            statusClass = "text-amber-600";
-                                        } else {
-                                            budgetColor = "border-emerald-300 ring-1 ring-emerald-200";
-                                            barColor = "bg-emerald-500";
-                                            statusLabel = `$${(stated - budget.total).toLocaleString()} under budget`;
-                                            statusClass = "text-emerald-600";
-                                        }
+                                        if (ratio > 1) { isOver = true; statusLabel = `$${(budget.total - stated).toLocaleString()} OVER BUDGET`; }
+                                        else if (ratio > 0.9) { isClose = true; statusLabel = "WITHIN 10% OF BUDGET"; }
+                                        else { isUnder = true; statusLabel = `$${(stated - budget.total).toLocaleString()} UNDER BUDGET`; }
                                     }
 
                                     return (
                                         <div
                                             key={name}
-                                            className={`rounded-xl border bg-card p-4 ${budgetColor}`}
+                                            className={`border-4 p-5 ${
+                                                isOver ? "border-foreground bg-foreground" :
+                                                isClose ? "border-foreground" :
+                                                "border-foreground"
+                                            }`}
                                         >
-                                            <h3 className="font-semibold text-foreground">{name}</h3>
-                                            <p className="text-xl font-bold gradient-text mt-1">
+                                            <h3 className={`font-black text-xl uppercase tracking-tighter ${
+                                                isOver ? "text-background" : "text-foreground"
+                                            }`}>{name}</h3>
+                                            <p className={`text-4xl font-black uppercase tracking-tighter mt-1 ${
+                                                isOver ? "text-background" : "text-foreground"
+                                            }`}>
                                                 ${budget.total?.toLocaleString()}
                                             </p>
 
                                             {/* Budget bar */}
                                             {stated != null && (
-                                                <div className="mt-2">
-                                                    <div className="flex justify-between text-[10px] text-muted mb-1">
-                                                        <span>Estimated</span>
-                                                        <span>Budget: ${stated.toLocaleString()}</span>
+                                                <div className="mt-4">
+                                                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-2">
+                                                        <span className={isOver ? "text-background/70" : "text-foreground/60"}>ESTIMATED</span>
+                                                        <span className={isOver ? "text-background/70" : "text-foreground/60"}>BUDGET: ${stated.toLocaleString()}</span>
                                                     </div>
-                                                    <div className="h-2 rounded-full bg-border overflow-hidden">
+                                                    <div className={`h-5 border-2 overflow-hidden ${
+                                                        isOver ? "border-background bg-background/20" : "border-foreground bg-background"
+                                                    }`}>
                                                         <div
-                                                            className={`h-full rounded-full transition-all ${barColor}`}
+                                                            className={isOver ? "h-full bg-background" : "h-full bg-foreground"}
                                                             style={{ width: `${Math.min((budget.total / stated) * 100, 100)}%` }}
                                                         />
                                                     </div>
-                                                    <p className={`text-[10px] font-medium mt-1 ${statusClass}`}>
+                                                    <p className={`text-[10px] font-black uppercase tracking-widest mt-2 ${
+                                                        isOver ? "text-background" : "text-foreground/70"
+                                                    }`}>
                                                         {statusLabel}
                                                     </p>
                                                 </div>
                                             )}
 
-                                            <div className="mt-3 space-y-2">
+                                            <div className={`mt-5 space-y-3 border-t-4 pt-4 ${
+                                                isOver ? "border-background/30" : "border-foreground/20"
+                                            }`}>
                                                 {[
-                                                    { label: "🏨 Accommodation", value: budget.accommodation },
-                                                    { label: "🍽️ Food", value: budget.food },
-                                                    { label: "🎯 Activities", value: budget.activities },
-                                                    { label: "🚗 Transportation", value: budget.transportation },
+                                                    { label: "ACCOMMODATION", value: budget.accommodation },
+                                                    { label: "FOOD", value: budget.food },
+                                                    { label: "ACTIVITIES", value: budget.activities },
+                                                    { label: "TRANSPORT", value: budget.transportation },
                                                 ].map((item) => (
                                                     <div
                                                         key={item.label}
-                                                        className="flex justify-between text-xs text-muted"
+                                                        className={`flex justify-between text-xs font-bold uppercase tracking-widest ${
+                                                            isOver ? "text-background/70" : "text-foreground/70"
+                                                        }`}
                                                     >
                                                         <span>{item.label}</span>
-                                                        <span className="font-medium text-foreground">
+                                                        <span className={isOver ? "text-background" : "text-foreground"}>
                                                             ${item.value?.toLocaleString() || 0}
                                                         </span>
                                                     </div>

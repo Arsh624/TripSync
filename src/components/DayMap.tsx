@@ -23,30 +23,23 @@ interface DayMapProps {
     highlightedIndex: number | null;
 }
 
-// ── Color palette for numbered markers ──
-const MARKER_COLORS = [
-    "#6366f1", "#ec4899", "#f59e0b", "#10b981", "#06b6d4",
-    "#8b5cf6", "#ef4444", "#14b8a6", "#f97316", "#3b82f6",
-];
-
+// ── Brutalist monochrome numbered markers ──
 function createNumberedIcon(index: number) {
-    const color = MARKER_COLORS[index % MARKER_COLORS.length];
     return L.divIcon({
         className: "custom-numbered-marker",
         html: `<div style="
-            background: ${color};
+            background: black;
             color: white;
             width: 32px;
             height: 32px;
-            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-weight: 700;
-            font-size: 14px;
-            border: 3px solid white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            font-weight: 900;
+            font-size: 13px;
+            border: 3px solid black;
             font-family: system-ui, sans-serif;
+            letter-spacing: 0;
         ">${index + 1}</div>`,
         iconSize: [32, 32],
         iconAnchor: [16, 16],
@@ -76,7 +69,7 @@ function MapController({ stops, highlightedIndex, markerRefs }: {
     return null;
 }
 
-// ── Layer toggle button ──
+// ── Layer toggle button (brutalist) ──
 function LayerToggle({ isSatellite, onToggle }: { isSatellite: boolean; onToggle: () => void }) {
     return (
         <button
@@ -86,19 +79,19 @@ function LayerToggle({ isSatellite, onToggle }: { isSatellite: boolean; onToggle
                 top: 10,
                 right: 10,
                 zIndex: 1000,
-                background: "rgba(30, 30, 46, 0.85)",
-                color: "#fff",
-                border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: 8,
-                padding: "6px 12px",
-                fontSize: 12,
-                fontWeight: 600,
+                background: isSatellite ? "black" : "white",
+                color: isSatellite ? "white" : "black",
+                border: "3px solid black",
+                borderRadius: 0,
+                padding: "6px 14px",
+                fontSize: 11,
+                fontWeight: 900,
                 cursor: "pointer",
-                backdropFilter: "blur(8px)",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.3)",
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
             }}
         >
-            {isSatellite ? "🗺️ Street" : "🛰️ Satellite"}
+            {isSatellite ? "\u25a1 STREET" : "\u25a1 SATELLITE"}
         </button>
     );
 }
@@ -121,7 +114,7 @@ export default function DayMap({ stops, highlightedIndex }: DayMapProps) {
     const routePoints: [number, number][] = stops.map((s) => [s.lat, s.lng]);
 
     return (
-        <div className="relative rounded-2xl overflow-hidden border border-border shadow-lg" style={{ height: 400 }}>
+        <div className="relative overflow-hidden border-4 border-foreground" style={{ height: 400 }}>
             <LayerToggle isSatellite={isSatellite} onToggle={() => setIsSatellite((v) => !v)} />
             <MapContainer
                 bounds={bounds}
@@ -149,18 +142,10 @@ export default function DayMap({ stops, highlightedIndex }: DayMapProps) {
                     />
                 )}
 
-                {/* Route polylines — white outline, purple center, glow */}
+                {/* Route polyline — single thick black line */}
                 <Polyline
                     positions={routePoints}
-                    pathOptions={{ color: "#818cf8", weight: 12, opacity: 0.2 }}
-                />
-                <Polyline
-                    positions={routePoints}
-                    pathOptions={{ color: "white", weight: 7, opacity: 0.5 }}
-                />
-                <Polyline
-                    positions={routePoints}
-                    pathOptions={{ color: "#6366f1", weight: 4, opacity: 1 }}
+                    pathOptions={{ color: "black", weight: 4, opacity: 1 }}
                 />
 
                 {/* Markers */}
@@ -172,10 +157,10 @@ export default function DayMap({ stops, highlightedIndex }: DayMapProps) {
                         ref={setMarkerRef(i)}
                     >
                         <Popup>
-                            <div style={{ minWidth: 180 }}>
-                                <strong style={{ fontSize: 14 }}>{stop.name}</strong>
-                                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 2 }}>{stop.time}</div>
-                                <p style={{ fontSize: 12, marginTop: 4, color: "#374151" }}>{stop.description}</p>
+                            <div style={{ minWidth: 180, fontFamily: "system-ui, sans-serif" }}>
+                                <strong style={{ fontSize: 13, fontWeight: 900, textTransform: "uppercase", letterSpacing: "0.05em" }}>{stop.name}</strong>
+                                <div style={{ fontSize: 11, color: "#555", marginTop: 2, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>{stop.time}</div>
+                                <p style={{ fontSize: 11, marginTop: 4, color: "#333", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.04em" }}>{stop.description}</p>
                                 {stop.mapQuery && (
                                     <a
                                         href={`https://www.google.com/maps/search/?api=1&query=${stop.mapQuery}`}
@@ -183,14 +168,18 @@ export default function DayMap({ stops, highlightedIndex }: DayMapProps) {
                                         rel="noopener noreferrer"
                                         style={{
                                             display: "inline-block",
-                                            marginTop: 6,
-                                            fontSize: 12,
-                                            color: "#6366f1",
-                                            fontWeight: 600,
+                                            marginTop: 8,
+                                            fontSize: 11,
+                                            color: "black",
+                                            fontWeight: 900,
                                             textDecoration: "none",
+                                            textTransform: "uppercase",
+                                            letterSpacing: "0.08em",
+                                            border: "2px solid black",
+                                            padding: "3px 8px",
                                         }}
                                     >
-                                        📍 Open in Google Maps →
+                                        ⌖ OPEN IN MAPS ↗
                                     </a>
                                 )}
                             </div>

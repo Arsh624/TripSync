@@ -3,47 +3,47 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --background: #fafbff;
-  --foreground: #0f172a;
-  --primary: #6366f1;
-  --primary-light: #818cf8;
-  --primary-dark: #4f46e5;
-  --accent: #06b6d4;
-  --accent-light: #22d3ee;
-  --success: #10b981;
-  --warning: #f59e0b;
-  --danger: #ef4444;
-  --muted: #94a3b8;
-  --border: #e2e8f0;
+  --background: #fafafa;
+  --foreground: #111111;
+  --primary: #000000;
+  --primary-light: #333333;
+  --primary-dark: #000000;
+  --accent: #666666;
+  --accent-light: #999999;
+  --success: #34c759;
+  --warning: #ffcc00;
+  --danger: #ff3b30;
+  --muted: #8e8e93;
+  --border: #e5e5ea;
   --card: #ffffff;
-  --card-hover: #f8fafc;
-  --gradient-start: #6366f1;
-  --gradient-mid: #8b5cf6;
-  --gradient-end: #06b6d4;
+  --card-hover: #fcfcfc;
+  --gradient-start: #111111;
+  --gradient-mid: #333333;
+  --gradient-end: #666666;
   --input-bg: #ffffff;
-  --input-border: #d1d5db;
+  --input-border: #c7c7cc;
 }
 
 html.dark {
-  --background: #0f1117;
-  --foreground: #e2e8f0;
-  --primary: #818cf8;
-  --primary-light: #a5b4fc;
-  --primary-dark: #6366f1;
-  --accent: #22d3ee;
-  --accent-light: #67e8f9;
-  --success: #34d399;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --muted: #64748b;
-  --border: #1e293b;
-  --card: #1a1d2e;
-  --card-hover: #222640;
-  --gradient-start: #818cf8;
-  --gradient-mid: #a78bfa;
-  --gradient-end: #22d3ee;
-  --input-bg: #1a1d2e;
-  --input-border: #334155;
+  --background: #000000;
+  --foreground: #f5f5f7;
+  --primary: #ffffff;
+  --primary-light: #cccccc;
+  --primary-dark: #ffffff;
+  --accent: #999999;
+  --accent-light: #666666;
+  --success: #30d158;
+  --warning: #ffd60a;
+  --danger: #ff453a;
+  --muted: #8e8e93;
+  --border: #333336;
+  --card: #111111;
+  --card-hover: #1c1c1e;
+  --gradient-start: #ffffff;
+  --gradient-mid: #cccccc;
+  --gradient-end: #999999;
+  --input-bg: #1c1c1e;
+  --input-border: #333336;
 }
 
 @theme inline {
@@ -411,4 +411,23 @@ html.dark .border-dashed {
 /* Slider/range inputs */
 html.dark input[type="range"] {
   background-color: var(--border) !important;
+}
+
+.slider-thumb-brutalist::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--foreground);
+  cursor: pointer;
+  border: 4px solid var(--background);
+}
+
+.slider-thumb-brutalist::-moz-range-thumb {
+  width: 1.5rem;
+  height: 1.5rem;
+  background: var(--foreground);
+  cursor: pointer;
+  border: 4px solid var(--background);
+  border-radius: 0;
 }

@@ -175,16 +175,16 @@ export default function PreferenceForm({
         <div className="min-h-screen pt-20 pb-16 page-transition">
             <div className="mx-auto max-w-2xl px-4 sm:px-6">
                 {/* Progress bar */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between text-xs text-muted mb-2">
+                <div className="mb-10">
+                    <div className="flex items-center justify-between text-sm font-bold uppercase tracking-widest text-foreground mb-3">
                         <span>
-                            {steps[step]} ({step + 1}/{steps.length})
+                            STEP {step + 1} OF {steps.length}: {steps[step].toUpperCase()}
                         </span>
-                        <span className="font-medium text-foreground">{tripName}</span>
+                        <span className="font-black truncate max-w-[50%]">{tripName}</span>
                     </div>
-                    <div className="h-2 rounded-full bg-border overflow-hidden">
+                    <div className="h-6 border-4 border-foreground bg-background p-0.5 overflow-hidden">
                         <div
-                            className="h-full rounded-full gradient-bg transition-all duration-500 ease-out"
+                            className="h-full bg-foreground transition-all duration-500 ease-out"
                             style={{ width: `${((step + 1) / steps.length) * 100}%` }}
                         />
                     </div>
@@ -193,47 +193,47 @@ export default function PreferenceForm({
                 {/* ── Step 0: Welcome ── */}
                 {step === 0 && (
                     <div className="text-center animate-fade-in">
-                        <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-indigo-50 text-4xl">
-                            👋
+                        <div className="mx-auto mb-8 flex h-24 w-24 items-center justify-center border-4 border-foreground bg-foreground text-5xl text-background">
+                            ✹
                         </div>
-                        <h1 className="text-3xl font-bold text-foreground">
-                            Hey{userName ? `, ${userName.split(" ")[0]}` : ""}!
+                        <h1 className="text-4xl md:text-6xl font-black uppercase tracking-tighter text-foreground leading-none">
+                            HEY{userName ? `, ${userName.split(" ")[0].toUpperCase()}` : ""}
                         </h1>
-                        <p className="mt-3 text-lg text-muted max-w-md mx-auto">
-                            Let&apos;s figure out your dream trip. This takes about 2 minutes
-                            — just tell us what you love.
+                        <p className="mt-4 text-sm font-bold uppercase tracking-widest text-foreground/70 max-w-md mx-auto">
+                            LET'S FIGURE OUT YOUR DREAM TRIP. THIS TAKES ABOUT 2 MINUTES
+                            — JUST TELL US WHAT YOU LOVE.
                         </p>
                         {alreadySubmitted && (
-                            <div className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                                ✏️ You already submitted — editing your preferences
+                            <div className="mt-6 border-4 border-foreground bg-background px-4 py-3 text-sm font-bold uppercase tracking-widest text-foreground">
+                                ✎ YOU ALREADY SUBMITTED — EDITING PREFERENCES
                             </div>
                         )}
 
                         {/* Voice option */}
                         <button
                             onClick={() => setShowVoice(true)}
-                            className="mt-8 w-full max-w-md mx-auto flex items-center gap-3 rounded-2xl border-2 border-dashed border-primary/40 bg-card p-4 text-left transition-all hover:border-primary hover:shadow-md group"
+                            className="mt-10 w-full max-w-md mx-auto flex items-center gap-4 border-4 border-foreground bg-background p-4 text-left transition-colors hover:bg-foreground hover:text-background group"
                         >
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl gradient-bg text-white text-xl group-hover:scale-110 transition-transform">
-                                🎙️
+                            <div className="flex h-14 w-14 sm:h-16 sm:w-16 shrink-0 items-center justify-center border-4 border-foreground bg-background text-foreground text-3xl group-hover:bg-background group-hover:text-foreground transition-colors overflow-hidden">
+                                ⚄
                             </div>
-                            <div>
-                                <div className="font-semibold text-foreground">Prefer to talk?</div>
-                                <div className="text-xs text-muted">Tell our AI about your ideal trip — we&apos;ll fill the form for you</div>
+                            <div className="min-w-0">
+                                <div className="font-black text-xl sm:text-2xl uppercase tracking-tighter group-hover:text-background truncate">PREFER TO TALK?</div>
+                                <div className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-foreground/70 group-hover:text-background/80 mt-1 line-clamp-2">TELL OUR AI ABOUT YOUR IDEAL TRIP — WE'LL FILL THE FORM FOR YOU</div>
                             </div>
                         </button>
 
-                        <div className="mt-4 flex items-center gap-3 max-w-md mx-auto">
-                            <div className="flex-1 h-px bg-border" />
-                            <span className="text-xs text-muted">or fill out the form</span>
-                            <div className="flex-1 h-px bg-border" />
+                        <div className="mt-8 flex items-center gap-4 max-w-md mx-auto">
+                            <div className="flex-1 h-1 bg-foreground" />
+                            <span className="text-sm font-black uppercase tracking-widest text-foreground whitespace-nowrap">OR FILL OUT FORM</span>
+                            <div className="flex-1 h-1 bg-foreground" />
                         </div>
 
                         <button
                             onClick={() => setStep(1)}
-                            className="mt-4 inline-flex items-center gap-2 rounded-full gradient-bg px-8 py-3.5 text-lg font-semibold text-white shadow-lg transition-all hover:shadow-xl hover:scale-105 active:scale-95"
+                            className="mt-8 inline-block w-full max-w-md mx-auto border-4 border-foreground bg-foreground py-5 text-xl font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground"
                         >
-                            Let&apos;s Go! 🚀
+                            LET'S GO ↗
                         </button>
                     </div>
                 )}
@@ -248,18 +248,18 @@ export default function PreferenceForm({
                 {/* ── Step 1: Budget ── */}
                 {step === 1 && (
                     <div className="animate-fade-in space-y-8">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold text-foreground">
-                                💰 What&apos;s your budget?
+                        <div className="text-center border-b-4 border-foreground pb-6">
+                            <h2 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+                                ✹ WHAT'S YOUR BUDGET?
                             </h2>
-                            <p className="mt-2 text-muted">
-                                Total spending for the whole trip (not per day)
+                            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                                TOTAL SPENDING FOR THE WHOLE TRIP (NOT PER DAY)
                             </p>
                         </div>
 
-                        <div className="rounded-2xl border border-border bg-card p-8">
-                            <div className="text-center mb-6">
-                                <span className="text-5xl font-bold gradient-text">
+                        <div className="border-4 border-foreground bg-background p-8">
+                            <div className="text-center mb-8">
+                                <span className="text-6xl md:text-7xl font-black uppercase tracking-tighter text-foreground">
                                     ${budget.toLocaleString()}
                                 </span>
                             </div>
@@ -270,9 +270,9 @@ export default function PreferenceForm({
                                 step="50"
                                 value={budget}
                                 onChange={(e) => setBudget(parseInt(e.target.value))}
-                                className="w-full accent-[var(--primary)]"
+                                className="w-full slider-thumb-brutalist"
                             />
-                            <div className="flex justify-between mt-2 text-xs text-muted">
+                            <div className="flex justify-between mt-4 text-sm font-bold uppercase tracking-widest text-foreground">
                                 <span>$200</span>
                                 <span>$1500</span>
                                 <span>$3000</span>
@@ -283,13 +283,13 @@ export default function PreferenceForm({
 
                 {/* ── Step 2: Vibes ── */}
                 {step === 2 && (
-                    <div className="animate-fade-in space-y-6">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold text-foreground">
-                                ✨ Rate your vibes
+                    <div className="animate-fade-in space-y-8">
+                        <div className="text-center border-b-4 border-foreground pb-6">
+                            <h2 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+                                ⚑ RATE YOUR VIBES
                             </h2>
-                            <p className="mt-2 text-muted">
-                                Drag each slider to show how much you&apos;re into it
+                            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                                DRAG EACH SLIDER TO SHOW HOW MUCH YOU'RE INTO IT
                             </p>
                         </div>
 
@@ -297,13 +297,13 @@ export default function PreferenceForm({
                             {vibes.map(({ key, emoji, label }) => (
                                 <div
                                     key={key}
-                                    className="rounded-xl border border-border bg-card p-4 transition-all hover:border-primary-light"
+                                    className="border-4 border-foreground bg-background p-4"
                                 >
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className="flex items-center gap-2 font-medium text-foreground">
-                                            <span className="text-xl">{emoji}</span> {label}
+                                    <div className="flex items-center justify-between mb-4">
+                                        <span className="flex items-center gap-3 font-black text-lg uppercase tracking-tighter text-foreground">
+                                            <span className="text-2xl">{emoji}</span> {label}
                                         </span>
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-sm font-bold text-primary">
+                                        <span className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-foreground text-background text-lg font-black">
                                             {vibeRatings[key]}
                                         </span>
                                     </div>
@@ -318,11 +318,11 @@ export default function PreferenceForm({
                                                 [key]: parseInt(e.target.value),
                                             })
                                         }
-                                        className="w-full accent-[var(--primary)]"
+                                        className="w-full slider-thumb-brutalist"
                                     />
-                                    <div className="flex justify-between mt-1 text-[10px] text-muted">
-                                        <span>Meh</span>
-                                        <span>Love it!</span>
+                                    <div className="flex justify-between mt-3 text-xs font-bold uppercase tracking-widest text-foreground/70">
+                                        <span>MEH</span>
+                                        <span>LOVE IT!</span>
                                     </div>
                                 </div>
                             ))}
@@ -333,17 +333,16 @@ export default function PreferenceForm({
                 {/* ── Step 3: Dietary ── */}
                 {step === 3 && (
                     <div className="animate-fade-in space-y-8">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold text-foreground">
-                                🍽️ Dietary needs
+                        <div className="text-center border-b-4 border-foreground pb-6">
+                            <h2 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+                                〰 DIETARY NEEDS
                             </h2>
-                            <p className="mt-2 text-muted">
-                                Select any restrictions — we&apos;ll make sure restaurants accommodate
-                                you
+                            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                                SELECT ANY RESTRICTIONS — WE'LL MAKE SURE RESTAURANTS ACCOMMODATE YOU
                             </p>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-3">
+                        <div className="grid grid-cols-2 gap-4">
                             {dietaryOptions.map((option) => (
                                 <button
                                     key={option}
@@ -360,9 +359,9 @@ export default function PreferenceForm({
                                             );
                                         }
                                     }}
-                                    className={`rounded-xl border p-3 text-sm font-medium transition-all ${dietary.includes(option)
-                                        ? "border-primary bg-indigo-50 text-primary shadow-sm"
-                                        : "border-border bg-card text-foreground hover:border-primary-light"
+                                    className={`border-4 py-4 text-base font-black uppercase tracking-widest transition-colors ${dietary.includes(option)
+                                        ? "border-foreground bg-foreground text-background"
+                                        : "border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
                                         }`}
                                 >
                                     {option}
@@ -370,16 +369,16 @@ export default function PreferenceForm({
                             ))}
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-semibold text-foreground mb-2">
-                                Anything else about food? (optional)
+                        <div className="mt-8 border-t-4 border-foreground pt-6">
+                            <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-4">
+                                ANYTHING ELSE ABOUT FOOD? (OPTIONAL)
                             </label>
                             <textarea
                                 rows={2}
-                                placeholder="e.g., I'm allergic to shellfish, love spicy food..."
+                                placeholder="E.G., I'M ALLERGIC TO SHELLFISH..."
                                 value={dietaryNotes}
                                 onChange={(e) => setDietaryNotes(e.target.value)}
-                                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                                className="w-full border-4 border-foreground bg-background px-4 py-4 text-lg font-bold uppercase tracking-widest text-foreground placeholder:text-foreground/30 focus:bg-foreground/5 focus:outline-none transition-colors resize-none"
                             />
                         </div>
                     </div>
@@ -388,51 +387,38 @@ export default function PreferenceForm({
                 {/* ── Step 4: Activity Preferences ── */}
                 {step === 4 && (
                     <div className="animate-fade-in space-y-8">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold text-foreground">
-                                🏃 Activity style
+                        <div className="text-center border-b-4 border-foreground pb-6">
+                            <h2 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+                                🏃 ACTIVITY STYLE
                             </h2>
-                            <p className="mt-2 text-muted">How packed do you want each day?</p>
+                            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                                HOW PACKED DO YOU WANT EACH DAY?
+                            </p>
                         </div>
 
                         {/* Pace */}
                         <div>
-                            <label className="block text-sm font-semibold text-foreground mb-3">
-                                Ideal pace
+                            <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-4">
+                                IDEAL PACE
                             </label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 {[
-                                    {
-                                        value: "chill",
-                                        emoji: "😌",
-                                        label: "Chill",
-                                        desc: "2-3 activities/day",
-                                    },
-                                    {
-                                        value: "moderate",
-                                        emoji: "😊",
-                                        label: "Moderate",
-                                        desc: "3-4 activities/day",
-                                    },
-                                    {
-                                        value: "packed",
-                                        emoji: "🤩",
-                                        label: "Packed",
-                                        desc: "5+ activities/day",
-                                    },
+                                    { value: "chill", emoji: "😌", label: "CHILL", desc: "2-3 ACTIVITIES/DAY" },
+                                    { value: "moderate", emoji: "😊", label: "MODERATE", desc: "3-4 ACTIVITIES/DAY" },
+                                    { value: "packed", emoji: "🤩", label: "PACKED", desc: "5+ ACTIVITIES/DAY" },
                                 ].map((option) => (
                                     <button
                                         key={option.value}
                                         type="button"
                                         onClick={() => setActivityLevel(option.value)}
-                                        className={`rounded-xl border p-4 text-center transition-all ${activityLevel === option.value
-                                            ? "border-primary bg-indigo-50 text-primary shadow-sm"
-                                            : "border-border bg-card text-foreground hover:border-primary-light"
+                                        className={`border-4 p-4 text-center transition-colors ${activityLevel === option.value
+                                            ? "border-foreground bg-foreground text-background"
+                                            : "border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
                                             }`}
                                     >
-                                        <div className="text-2xl mb-1">{option.emoji}</div>
-                                        <div className="text-sm font-semibold">{option.label}</div>
-                                        <div className="text-[11px] text-muted mt-0.5">
+                                        <div className="text-3xl mb-2">{option.emoji}</div>
+                                        <div className="text-lg font-black uppercase tracking-widest">{option.label}</div>
+                                        <div className={`text-xs font-bold uppercase tracking-widest mt-1 ${activityLevel === option.value ? "text-background/70" : "text-foreground/70"}`}>
                                             {option.desc}
                                         </div>
                                     </button>
@@ -442,26 +428,26 @@ export default function PreferenceForm({
 
                         {/* Accommodation */}
                         <div>
-                            <label className="block text-sm font-semibold text-foreground mb-3">
-                                Accommodation preference
+                            <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-4">
+                                ACCOMMODATION PREFERENCE
                             </label>
-                            <div className="grid grid-cols-3 gap-3">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 {[
-                                    { value: "budget", emoji: "🏕️", label: "Budget" },
-                                    { value: "mid-range", emoji: "🏨", label: "Mid-range" },
-                                    { value: "luxury", emoji: "✨", label: "Luxury" },
+                                    { value: "budget", emoji: "🏕️", label: "BUDGET" },
+                                    { value: "mid-range", emoji: "🏨", label: "MID-RANGE" },
+                                    { value: "luxury", emoji: "✨", label: "LUXURY" },
                                 ].map((option) => (
                                     <button
                                         key={option.value}
                                         type="button"
                                         onClick={() => setAccommodationPref(option.value)}
-                                        className={`rounded-xl border p-4 text-center transition-all ${accommodationPref === option.value
-                                            ? "border-primary bg-indigo-50 text-primary shadow-sm"
-                                            : "border-border bg-card text-foreground hover:border-primary-light"
+                                        className={`border-4 p-4 text-center transition-colors ${accommodationPref === option.value
+                                            ? "border-foreground bg-foreground text-background"
+                                            : "border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
                                             }`}
                                     >
-                                        <div className="text-2xl mb-1">{option.emoji}</div>
-                                        <div className="text-sm font-semibold">{option.label}</div>
+                                        <div className="text-3xl mb-2">{option.emoji}</div>
+                                        <div className="text-lg font-black uppercase tracking-widest">{option.label}</div>
                                     </button>
                                 ))}
                             </div>
@@ -469,18 +455,18 @@ export default function PreferenceForm({
 
                         {/* Must-haves */}
                         <div>
-                            <label className="block text-sm font-semibold text-foreground mb-3">
-                                Must-haves ✅
+                            <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-4">
+                                MUST-HAVES ✅
                             </label>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-4">
                                 {mustHaveOptions.map((option) => (
                                     <button
                                         key={option}
                                         type="button"
                                         onClick={() => setMustHaves(toggleArray(mustHaves, option))}
-                                        className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${mustHaves.includes(option)
-                                            ? "border-emerald-400 bg-emerald-50 text-emerald-700"
-                                            : "border-border bg-card text-foreground hover:border-emerald-300"
+                                        className={`border-4 px-4 py-2 text-sm font-black uppercase tracking-widest transition-colors ${mustHaves.includes(option)
+                                            ? "border-emerald-500 bg-emerald-500 text-background"
+                                            : "border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
                                             }`}
                                     >
                                         {mustHaves.includes(option) ? "✓ " : ""}
@@ -492,10 +478,10 @@ export default function PreferenceForm({
 
                         {/* Dealbreakers */}
                         <div>
-                            <label className="block text-sm font-semibold text-foreground mb-3">
-                                Dealbreakers 🚫
+                            <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-4">
+                                DEALBREAKERS 🚫
                             </label>
-                            <div className="flex flex-wrap gap-2">
+                            <div className="flex flex-wrap gap-4">
                                 {dealbreakerOptions.map((option) => (
                                     <button
                                         key={option}
@@ -503,9 +489,9 @@ export default function PreferenceForm({
                                         onClick={() =>
                                             setDealbreakers(toggleArray(dealbreakers, option))
                                         }
-                                        className={`rounded-full border px-3.5 py-1.5 text-sm font-medium transition-all ${dealbreakers.includes(option)
-                                            ? "border-red-400 bg-red-50 text-red-700"
-                                            : "border-border bg-card text-foreground hover:border-red-300"
+                                        className={`border-4 px-4 py-2 text-sm font-black uppercase tracking-widest transition-colors ${dealbreakers.includes(option)
+                                            ? "border-red-500 bg-red-500 text-background"
+                                            : "border-foreground bg-background text-foreground hover:bg-foreground hover:text-background"
                                             }`}
                                     >
                                         {dealbreakers.includes(option) ? "✗ " : ""}
@@ -520,51 +506,49 @@ export default function PreferenceForm({
                 {/* ── Step 5: Open-ended ── */}
                 {step === 5 && (
                     <div className="animate-fade-in space-y-8">
-                        <div className="text-center">
-                            <h2 className="text-2xl font-bold text-foreground">
-                                💬 Anything else?
+                        <div className="text-center border-b-4 border-foreground pb-6">
+                            <h2 className="text-3xl font-black uppercase tracking-tighter text-foreground">
+                                💬 ANYTHING ELSE?
                             </h2>
-                            <p className="mt-2 text-muted">
-                                Last step! Share anything the group should know.
+                            <p className="mt-2 text-sm font-bold uppercase tracking-widest text-foreground/70">
+                                LAST STEP! SHARE ANYTHING THE GROUP SHOULD KNOW.
                             </p>
                         </div>
 
                         <div>
-                            <label className="block text-sm font-semibold text-foreground mb-2">
-                                Anything the group should know?
+                            <label className="block text-sm font-black uppercase tracking-widest text-foreground mb-4">
+                                ANYTHING THE GROUP SHOULD KNOW?
                             </label>
                             <textarea
                                 rows={3}
-                                placeholder="e.g., I just want to chill on a beach and maybe do some hiking"
+                                placeholder="E.G., I JUST WANT TO CHILL ON A BEACH AND MAYBE DO SOME HIKING"
                                 value={additionalNotes}
                                 onChange={(e) => setAdditionalNotes(e.target.value)}
-                                className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted/50 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all resize-none"
+                                className="w-full border-4 border-foreground bg-background px-4 py-4 text-lg font-bold uppercase tracking-widest text-foreground placeholder:text-foreground/30 focus:bg-foreground/5 focus:outline-none transition-colors resize-none"
                             />
                         </div>
 
                         {/* Summary preview */}
-                        <div className="rounded-2xl border border-border bg-card p-6">
-                            <h3 className="text-sm font-semibold text-foreground mb-4">
-                                📋 Your preference summary
+                        <div className="border-4 border-foreground bg-background p-6">
+                            <h3 className="text-xl font-black uppercase tracking-tighter text-foreground mb-6 border-b-4 border-foreground pb-4">
+                                📋 YOUR PREFERENCE SUMMARY
                             </h3>
-                            <div className="space-y-3 text-sm">
-                                <div className="flex justify-between">
-                                    <span className="text-muted">Budget</span>
-                                    <span className="font-medium">${budget.toLocaleString()}</span>
+                            <div className="space-y-4 text-sm font-bold uppercase tracking-widest">
+                                <div className="flex justify-between items-center border-b-2 border-foreground/10 pb-2">
+                                    <span className="text-foreground/70">BUDGET</span>
+                                    <span className="text-lg">${budget.toLocaleString()}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">Pace</span>
-                                    <span className="font-medium capitalize">{activityLevel}</span>
+                                <div className="flex justify-between items-center border-b-2 border-foreground/10 pb-2">
+                                    <span className="text-foreground/70">PACE</span>
+                                    <span className="text-lg uppercase">{activityLevel}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">Stay</span>
-                                    <span className="font-medium capitalize">
-                                        {accommodationPref}
-                                    </span>
+                                <div className="flex justify-between items-center border-b-2 border-foreground/10 pb-2">
+                                    <span className="text-foreground/70">STAY</span>
+                                    <span className="text-lg uppercase">{accommodationPref}</span>
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-muted">Top vibe</span>
-                                    <span className="font-medium">
+                                <div className="flex justify-between items-center border-b-2 border-foreground/10 pb-2">
+                                    <span className="text-foreground/70">TOP VIBE</span>
+                                    <span className="text-lg uppercase">
                                         {
                                             vibes.find(
                                                 (v) =>
@@ -576,10 +560,10 @@ export default function PreferenceForm({
                                 </div>
                                 {dietary.length > 0 &&
                                     !dietary.includes("None") && (
-                                        <div className="flex justify-between">
-                                            <span className="text-muted">Dietary</span>
-                                            <span className="font-medium">
-                                                {dietary.join(", ")}
+                                        <div className="flex justify-between items-center pb-2">
+                                            <span className="text-foreground/70">DIETARY</span>
+                                            <span className="text-base text-right max-w-[50%] truncate">
+                                                {dietary.join(", ").toUpperCase()}
                                             </span>
                                         </div>
                                     )}
@@ -590,61 +574,40 @@ export default function PreferenceForm({
 
                 {/* Error */}
                 {error && (
-                    <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {error}
+                    <div className="mt-8 border-4 border-foreground bg-foreground px-4 py-3 text-sm font-bold uppercase tracking-widest text-background">
+                        ERROR: {error}
                     </div>
                 )}
 
                 {/* Navigation buttons */}
                 {step > 0 && (
-                    <div className="mt-8 flex gap-3">
+                    <div className="mt-10 flex flex-col sm:flex-row gap-4">
                         <button
                             type="button"
                             onClick={() => setStep(step - 1)}
-                            className="flex-1 rounded-xl border border-border bg-card py-3.5 font-medium text-foreground transition-all hover:bg-card-hover"
+                            className="flex-1 border-4 border-foreground bg-background py-5 text-xl font-black uppercase tracking-tighter text-foreground transition-colors hover:bg-foreground hover:text-background"
                         >
-                            ← Back
+                            ← BACK
                         </button>
                         {step < steps.length - 1 ? (
                             <button
                                 type="button"
                                 onClick={() => setStep(step + 1)}
-                                className="flex-1 rounded-xl gradient-bg py-3.5 font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                                className="flex-1 border-4 border-foreground bg-foreground py-5 text-xl font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground"
                             >
-                                Next →
+                                NEXT ↗
                             </button>
                         ) : (
                             <button
                                 type="button"
                                 onClick={handleSubmit}
                                 disabled={loading}
-                                className="flex-1 rounded-xl gradient-bg py-3.5 font-semibold text-white shadow-md transition-all hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+                                className="flex-1 border-4 border-foreground bg-foreground py-5 text-xl font-black uppercase tracking-tighter text-background transition-colors hover:bg-background hover:text-foreground disabled:opacity-50"
                             >
                                 {loading ? (
-                                    <span className="flex items-center justify-center gap-2">
-                                        <svg
-                                            className="h-5 w-5 animate-spin"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                        >
-                                            <circle
-                                                className="opacity-25"
-                                                cx="12"
-                                                cy="12"
-                                                r="10"
-                                                stroke="currentColor"
-                                                strokeWidth="4"
-                                            />
-                                            <path
-                                                className="opacity-75"
-                                                fill="currentColor"
-                                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                                            />
-                                        </svg>
-                                        Saving...
-                                    </span>
+                                    <span className="animate-pulse">SAVING...</span>
                                 ) : (
-                                    "Submit Preferences ✨"
+                                    "SUBMIT PREFERENCES ✹"
                                 )}
                             </button>
                         )}

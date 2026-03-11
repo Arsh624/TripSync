@@ -51,13 +51,13 @@ export default function BudgetDashboard({
             <div className="min-h-screen pt-24 pb-16 page-transition">
                 <div className="mx-auto max-w-2xl px-4 sm:px-6 text-center">
                     <div className="text-5xl mb-4">💰</div>
-                    <h1 className="text-2xl font-bold text-foreground">No Budget Data Yet</h1>
-                    <p className="mt-2 text-muted">
-                        The itinerary hasn&apos;t generated budget estimates for you yet.
+                    <h1 className="text-3xl font-black uppercase tracking-tighter text-foreground">NO BUDGET DATA YET</h1>
+                    <p className="text-sm font-bold uppercase tracking-widest text-foreground/70 mt-2">
+                        THE ITINERARY HASN'T GENERATED BUDGET ESTIMATES FOR YOU YET.
                     </p>
                     <Link
                         href={`/trip/${tripId}/itinerary`}
-                        className="mt-6 inline-flex items-center gap-2 rounded-full gradient-bg px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all"
+                        className="mt-8 inline-flex items-center gap-2 border-4 border-foreground bg-foreground px-6 py-3 text-sm font-black uppercase tracking-widest text-background transition-colors hover:bg-background hover:text-foreground"
                     >
                         ← Back to Itinerary
                     </Link>
@@ -101,74 +101,74 @@ export default function BudgetDashboard({
     return (
         <div className="min-h-screen pb-16 page-transition">
             {/* Header */}
-            <div className="sticky top-16 z-30 border-b border-border bg-card/95 backdrop-blur-md">
-                <div className="mx-auto max-w-2xl px-4 py-3 sm:px-6">
+            <div className="sticky top-16 z-30 border-b-4 border-foreground bg-background">
+                <div className="mx-auto max-w-2xl px-4 py-4 sm:px-6">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h1 className="text-lg font-bold text-foreground">My Budget</h1>
-                            <p className="text-xs text-muted">
+                            <h1 className="text-2xl font-black uppercase tracking-tighter text-foreground">MY BUDGET</h1>
+                            <p className="text-xs font-bold uppercase tracking-widest text-foreground/70 mt-1">
                                 📍 {destination} · {tripName}
                             </p>
                         </div>
                         <Link
                             href={`/trip/${tripId}/itinerary`}
-                            className="rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-card-hover transition-all"
+                            className="border-2 border-foreground bg-background px-3 py-1.5 text-xs font-black uppercase tracking-widest text-foreground hover:bg-foreground hover:text-background transition-colors"
                         >
-                            ← Itinerary
+                            ← ITINERARY
                         </Link>
                     </div>
                 </div>
             </div>
 
-            <div className="mx-auto max-w-2xl px-4 pt-6 sm:px-6 space-y-6">
+            <div className="mx-auto max-w-2xl px-4 pt-8 sm:px-6 space-y-8">
                 {/* Big total number */}
-                <div className="text-center py-4">
-                    <p className="text-sm text-muted font-medium uppercase tracking-wider">
-                        Your Estimated Total
+                <div className="text-center py-8 border-4 border-foreground bg-foreground text-background">
+                    <p className="text-sm font-bold uppercase tracking-widest text-background/80">
+                        YOUR ESTIMATED TOTAL
                     </p>
-                    <p className="text-5xl font-extrabold gradient-text mt-1">
+                    <p className="text-7xl font-black uppercase tracking-tighter mt-2">
                         ${total.toLocaleString()}
                     </p>
-                    <p className="text-sm text-muted mt-1">{userName}</p>
+                    <p className="text-sm font-bold uppercase tracking-widest mt-2">{userName}</p>
                 </div>
 
                 {/* Budget progress bar */}
                 {statedBudget != null && statedBudget > 0 && (
-                    <div className="rounded-2xl border border-border bg-card p-5">
-                        <div className="flex items-center justify-between mb-2">
-                            <span className="text-sm font-medium text-foreground">
-                                Budget Progress
+                    <div className="border-4 border-foreground bg-background p-6">
+                        <div className="flex items-center justify-between mb-4">
+                            <span className="text-base sm:text-lg font-black uppercase tracking-widest text-foreground">
+                                BUDGET PROGRESS
                             </span>
-                            <span className="text-sm font-semibold text-foreground">
+                            <span className="text-base sm:text-lg font-black uppercase tracking-widest text-foreground">
                                 ${total.toLocaleString()}{" "}
-                                <span className="text-muted font-normal">
+                                <span className="text-foreground/50">
                                     / ${statedBudget.toLocaleString()}
                                 </span>
                             </span>
                         </div>
-                        <div className="h-4 rounded-full bg-border overflow-hidden">
+                        <div className="h-6 border-4 border-foreground bg-background p-0.5 overflow-hidden">
                             <div
-                                className={`h-full rounded-full transition-all duration-700 ${barColor}`}
+                                className={`h-full transition-all duration-700 ${barColor}`}
                                 style={{
                                     width: `${Math.min(budgetPercent, 100)}%`,
                                 }}
                             />
                         </div>
-                        <p className={`text-sm font-medium mt-2 ${statusColor}`}>
+                        <p className={`text-sm font-bold uppercase tracking-widest mt-4 ${statusColor}`}>
                             {budgetStatus === "over" && "⚠️ "}
                             {budgetStatus === "close" && "⏳ "}
                             {budgetStatus === "under" && "✅ "}
-                            {statusText}
+                            {statusText.toUpperCase()}
                         </p>
                     </div>
                 )}
 
                 {/* Donut chart */}
-                <div className="rounded-2xl border border-border bg-card p-5">
-                    <h2 className="text-base font-semibold text-foreground mb-4">
-                        Spending Breakdown
+                <div className="border-4 border-foreground bg-background p-6">
+                    <h2 className="text-xl font-black uppercase tracking-tighter text-foreground mb-8 border-b-4 border-foreground pb-4">
+                        SPENDING BREAKDOWN
                     </h2>
-                    <div className="flex flex-col sm:flex-row items-center gap-6">
+                    <div className="flex flex-col sm:flex-row items-center gap-8">
                         <div className="w-48 h-48 shrink-0">
                             <ResponsiveContainer width="100%" height="100%">
                                 <PieChart>
@@ -195,11 +195,17 @@ export default function BudgetDashboard({
                                             "",
                                         ]}
                                         contentStyle={{
-                                            backgroundColor: "var(--card)",
-                                            border: "1px solid var(--border)",
-                                            borderRadius: "12px",
+                                            backgroundColor: "var(--background)",
+                                            border: "4px solid var(--foreground)",
+                                            borderRadius: "0px",
                                             color: "var(--foreground)",
-                                            fontSize: "13px",
+                                            fontSize: "12px",
+                                            textTransform: "uppercase",
+                                            fontWeight: "900",
+                                            letterSpacing: "0.1em"
+                                        }}
+                                        itemStyle={{
+                                            fontWeight: "900"
                                         }}
                                     />
                                 </PieChart>
@@ -207,26 +213,26 @@ export default function BudgetDashboard({
                         </div>
 
                         {/* Legend */}
-                        <div className="flex-1 w-full space-y-3">
+                        <div className="flex-1 w-full space-y-4">
                             {CATEGORIES.map((cat) => {
                                 const value = myBudget[cat.key as keyof MyBudget] as number;
                                 const pct = total > 0 ? ((value / total) * 100).toFixed(0) : "0";
                                 return (
                                     <div key={cat.key} className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-3">
                                             <div
-                                                className="w-3 h-3 rounded-full shrink-0"
+                                                className="w-4 h-4 border-2 border-foreground shrink-0"
                                                 style={{ backgroundColor: cat.color }}
                                             />
-                                            <span className="text-sm text-foreground">
+                                            <span className="text-sm font-bold uppercase tracking-widest text-foreground">
                                                 {cat.icon} {cat.label}
                                             </span>
                                         </div>
-                                        <div className="text-right">
-                                            <span className="text-sm font-semibold text-foreground">
+                                        <div className="text-right flex items-center gap-3">
+                                            <span className="text-base font-black text-foreground">
                                                 ${value.toLocaleString()}
                                             </span>
-                                            <span className="text-xs text-muted ml-1.5">
+                                            <span className="text-xs font-bold text-foreground/50 w-8 text-right">
                                                 {pct}%
                                             </span>
                                         </div>
@@ -239,11 +245,11 @@ export default function BudgetDashboard({
 
                 {/* Savings tips (only if over budget) */}
                 {budgetStatus === "over" && myBudget.savings_tips && (
-                    <div className="rounded-2xl border-2 border-amber-300 dark:border-amber-500/40 bg-amber-50 dark:bg-amber-950/30 p-5">
-                        <h2 className="text-base font-semibold text-amber-900 dark:text-amber-300 flex items-center gap-2">
-                            💡 Tips to Save Money
+                    <div className="border-4 border-amber-500 bg-amber-400 p-6 shadow-[8px_8px_0px_0px_rgba(245,158,11,1)]">
+                        <h2 className="text-xl font-black uppercase tracking-tighter text-amber-950 flex items-center gap-3 border-b-4 border-amber-950/20 pb-4 mb-4">
+                            💡 TIPS TO SAVE MONEY
                         </h2>
-                        <p className="mt-2 text-sm text-amber-800 dark:text-amber-200/80 leading-relaxed">
+                        <p className="text-sm font-bold uppercase tracking-wide text-amber-950 leading-relaxed">
                             {myBudget.savings_tips}
                         </p>
                     </div>
@@ -251,24 +257,24 @@ export default function BudgetDashboard({
 
                 {/* Group total */}
                 {groupTotal != null && (
-                    <div className="rounded-2xl border border-border bg-card p-5">
+                    <div className="border-4 border-foreground bg-background p-6">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-sm text-muted">Group Total</p>
-                                <p className="text-2xl font-bold text-foreground">
+                                <p className="text-sm font-bold uppercase tracking-widest text-foreground/70">GROUP TOTAL</p>
+                                <p className="text-4xl font-black uppercase tracking-tighter text-foreground mt-1">
                                     ${groupTotal.toLocaleString()}
                                 </p>
                             </div>
                             <div className="text-right">
-                                <p className="text-sm text-muted">Travelers</p>
-                                <p className="text-2xl font-bold text-foreground">
+                                <p className="text-sm font-bold uppercase tracking-widest text-foreground/70">TRAVELERS</p>
+                                <p className="text-4xl font-black uppercase tracking-tighter text-foreground mt-1">
                                     {memberCount}
                                 </p>
                             </div>
                         </div>
-                        <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-sm text-muted">
-                            <span>Average per person</span>
-                            <span className="font-medium text-foreground">
+                        <div className="mt-6 pt-6 border-t-4 border-foreground/10 flex items-center justify-between">
+                            <span className="text-sm font-bold uppercase tracking-widest text-foreground/70">AVERAGE PER PERSON</span>
+                            <span className="text-xl font-black text-foreground">
                                 ${memberCount > 0 ? Math.round(groupTotal / memberCount).toLocaleString() : 0}
                             </span>
                         </div>
