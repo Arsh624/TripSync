@@ -164,7 +164,7 @@ export default function LocationsClient({
                     </div>
 
                     <p className="mt-6 text-xs font-bold uppercase tracking-widest text-foreground/50">
-                        THIS MAY TAKE 10-20 SECONDS
+                        PLEASE BE PATIENT, THIS MAY TAKE A WHILE
                     </p>
                 </div>
             </div>

@@ -373,7 +373,7 @@ function GenerateDirectButton({ tripId, destination }: { tripId: string; destina
                 <div className="inline-flex items-center gap-2 border-4 border-foreground bg-foreground px-8 py-4 text-base font-black uppercase tracking-tighter text-background animate-pulse">
                     {phase === "synthesizing" ? "ANALYZING PREFERENCES..." : `BUILDING ${destination.toUpperCase()} ITINERARY...`}
                 </div>
-                <p className="mt-3 text-xs font-bold uppercase tracking-widest text-foreground/50">THIS MAY TAKE 10-20 SECONDS</p>
+                <p className="mt-3 text-xs font-bold uppercase tracking-widest text-foreground/50">PLEASE BE PATIENT, THIS MAY TAKE A WHILE</p>
             </div>
         );
     }
