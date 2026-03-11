@@ -14,7 +14,7 @@ export async function askGeminiJSON<T = unknown>(
     useGrounding = false
 ): Promise<T> {
     const model = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
+        model: "gemini-1.5-flash-latest",
         generationConfig: {
             responseMimeType: "application/json",
             temperature: 0.7,
