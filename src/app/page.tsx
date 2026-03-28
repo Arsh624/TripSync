@@ -148,7 +148,7 @@ export default function LandingPage() {
           TRIPSYNC
         </h2>
         <div className="flex flex-col md:flex-row gap-8 font-black uppercase tracking-widest text-sm text-center">
-          <span>BUILT FOR HACKCU 2026</span>
+          <span>TRAVEL SMARTER, TOGETHER</span>
           <span className="hidden md:inline">|</span>
           <span>NO MORE ENDLESS GROUP CHATS</span>
         </div>
